@@ -97,12 +97,15 @@
    Name: ads-frontend
    Region: Mismo que el backend
    Branch: main
-   Root Directory: frontend
+   Root Directory: frontend          ⚠️ IMPORTANTE: "frontend" no "fronted"
    Runtime: Node
    Build Command: npm install && npm run build
    Start Command: npm start
    Plan: Free
    ```
+   
+   > [!CAUTION]
+   > El **Root Directory** debe ser exactamente `frontend` (con "e" al final). Un error común es escribir `fronted` lo cual causará un error de deployment.
 
 4. **Agregar Variables de Entorno**:
    ```
