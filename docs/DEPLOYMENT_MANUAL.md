@@ -109,7 +109,7 @@
 
 4. **Agregar Variables de Entorno**:
    ```
-   NODE_VERSION = 18.17.0
+   NODE_VERSION = 20
    NEXT_PUBLIC_API_URL = <pegar URL del backend del Paso 3>
    
    # Auth0 Frontend
