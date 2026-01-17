@@ -1,0 +1,109 @@
+# =============================================================================
+# Docker Compose for Testing
+# =============================================================================
+# This file defines services for running tests in isolated containers.
+#
+# Usage:
+#   docker-compose -f docker-compose.test.yml up --build --abort-on-container-exit
+#   docker-compose -f docker-compose.test.yml down -v
+# =============================================================================
+
+version: '3.8'
+
+services:
+  # ---------------------------------------------------------------------------
+  # Backend Tests
+  # ---------------------------------------------------------------------------
+  backend-test:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.test
+    container_name: ads_backend_test
+    environment:
+      # Test configuration - uses in-memory SQLite
+      - PYTHONPATH=/app
+      - AUTH0_DOMAIN=test.auth0.com
+      - AUTH0_API_AUDIENCE=https://test-api
+      - POSTGRES_USER=test
+      - POSTGRES_PASSWORD=test
+      - POSTGRES_SERVER=localhost
+      - POSTGRES_DB=test
+      - POSTGRES_PORT=5432
+      - META_APP_ID=test
+      - META_APP_SECRET=test
+      - DEBUG=true
+    volumes:
+      # Mount tests for development
+      - ./backend/tests:/app/tests:ro
+      - ./backend/app:/app/app:ro
+    command: [ "pytest", "-v", "-s", "--tb=short", "--color=yes" ]
+
+  # ---------------------------------------------------------------------------
+  # Backend Tests with Coverage
+  # ---------------------------------------------------------------------------
+  backend-test-cov:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.test
+    container_name: ads_backend_test_cov
+    environment:
+      - PYTHONPATH=/app
+      - AUTH0_DOMAIN=test.auth0.com
+      - AUTH0_API_AUDIENCE=https://test-api
+      - POSTGRES_USER=test
+      - POSTGRES_PASSWORD=test
+      - POSTGRES_SERVER=localhost
+      - POSTGRES_DB=test
+      - POSTGRES_PORT=5432
+      - META_APP_ID=test
+      - META_APP_SECRET=test
+    volumes:
+      - ./backend/tests:/app/tests:ro
+      - ./backend/app:/app/app:ro
+      - ./backend/coverage:/app/coverage
+    command: [ "pytest", "-v", "--cov=app", "--cov-report=term-missing", "--cov-report=html:coverage/html", "--cov-fail-under=80" ]
+
+  # ---------------------------------------------------------------------------
+  # Backend Tests with PostgreSQL (Integration)
+  # ---------------------------------------------------------------------------
+  backend-test-integration:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.test
+    container_name: ads_backend_test_int
+    environment:
+      - PYTHONPATH=/app
+      - AUTH0_DOMAIN=test.auth0.com
+      - AUTH0_API_AUDIENCE=https://test-api
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_SERVER=test-db
+      - POSTGRES_DB=ads_test
+      - POSTGRES_PORT=5432
+      - META_APP_ID=test
+      - META_APP_SECRET=test
+      - USE_TEST_DB=true
+    depends_on:
+      test-db:
+        condition: service_healthy
+    volumes:
+      - ./backend/tests:/app/tests:ro
+      - ./backend/app:/app/app:ro
+    command: [ "pytest", "-v", "-m", "integration", "--tb=short", "--color=yes" ]
+
+  # ---------------------------------------------------------------------------
+  # Test Database (PostgreSQL)
+  # ---------------------------------------------------------------------------
+  test-db:
+    image: postgres:15-alpine
+    container_name: ads_test_db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=ads_test
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    # No volumes - data is ephemeral for tests
