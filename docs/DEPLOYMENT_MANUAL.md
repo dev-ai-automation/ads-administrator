@@ -122,11 +122,15 @@
    **Variables de Auth0 (REQUERIDAS):**
    ```
    AUTH0_SECRET = <generar nuevo: openssl rand -hex 32>
-   AUTH0_BASE_URL = https://<nombre-exacto-del-servicio>.onrender.com
+   AUTH0_BASE_URL = https://<nombre-exacto-del-servicio-FRONTEND>.onrender.com
    AUTH0_ISSUER_BASE_URL = https://<tu-tenant>.us.auth0.com
    AUTH0_CLIENT_ID = <copiar desde Auth0 Dashboard → Applications → Tu App → Settings>
    AUTH0_CLIENT_SECRET = <copiar desde Auth0 Dashboard → Applications → Tu App → Settings>
    ```
+   
+   > [!WARNING]
+   > **AUTH0_BASE_URL** es la URL del **FRONTEND**, NO del backend.  
+   > Ejemplo: Si tu servicio frontend se llama `ads-frontend-abc123`, usa `https://ads-frontend-abc123.onrender.com`
    
    **Cómo generar AUTH0_SECRET:**
    ```bash
