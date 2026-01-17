@@ -16,7 +16,7 @@ from app.core.config import settings
 
 # Create async engine with connection pooling
 engine = create_async_engine(
-    settings.DATABASE_URL,
+    settings.ASYNC_DATABASE_URL,
     echo=settings.DEBUG,  # Log SQL queries in debug mode
     pool_pre_ping=True,  # Validates connections before use
     pool_size=5,

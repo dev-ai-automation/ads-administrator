@@ -33,11 +33,15 @@ class Settings(BaseSettings):
     AUTH0_ALGORITHM: str = "RS256"
     
     # Database Configuration
-    POSTGRES_USER: str
-    POSTGRES_PASSWORD: str
+    # Option 1: Use DATABASE_URL directly (Render, production)
+    DATABASE_URL: str | None = None
+    
+    # Option 2: Use individual fields (local development)
+    POSTGRES_USER: str | None = None
+    POSTGRES_PASSWORD: str | None = None
     POSTGRES_SERVER: str = "localhost"
     POSTGRES_PORT: int = 5432
-    POSTGRES_DB: str
+    POSTGRES_DB: str | None = None
 
     # Meta Ads Configuration
     META_APP_ID: str | None = None
@@ -45,8 +49,29 @@ class Settings(BaseSettings):
 
     @computed_field  # type: ignore[prop-decorator]
     @property
-    def DATABASE_URL(self) -> str:
-        """Construct async PostgreSQL connection URL."""
+    def ASYNC_DATABASE_URL(self) -> str:
+        """
+        Get async PostgreSQL connection URL.
+        
+        Priority:
+        1. Use DATABASE_URL if provided (Render deployment)
+        2. Construct from individual fields (local development)
+        """
+        if self.DATABASE_URL:
+            # If using Render's DATABASE_URL, ensure it uses asyncpg driver
+            url = self.DATABASE_URL
+            if url.startswith("postgresql://"):
+                url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
+            elif url.startswith("postgres://"):
+                url = url.replace("postgres://", "postgresql+asyncpg://", 1)
+            return url
+        
+        # Construct from individual fields for local development
+        if not all([self.POSTGRES_USER, self.POSTGRES_PASSWORD, self.POSTGRES_DB]):
+            raise ValueError(
+                "Either DATABASE_URL or all of (POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB) must be set"
+            )
+        
         return (
             f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@"
             f"{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
