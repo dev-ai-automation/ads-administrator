@@ -107,18 +107,43 @@
    > [!CAUTION]
    > El **Root Directory** debe ser exactamente `frontend` (con "e" al final). Un error común es escribir `fronted` lo cual causará un error de deployment.
 
-4. **Agregar Variables de Entorno**:
+4. **Agregar Variables de Entorno** (CRÍTICO - todas son requeridas):
+   
+   > [!IMPORTANT]
+   > El frontend **NO funcionará** sin estas variables. Debes configurarlas TODAS antes de que el servicio pueda iniciar correctamente.
+   
+   **Variables Básicas:**
    ```
    NODE_VERSION = 20
    NEXT_PUBLIC_API_URL = <pegar URL del backend del Paso 3>
-   
-   # Auth0 Frontend
-   AUTH0_SECRET = <generar: openssl rand -hex 32>
-   AUTH0_BASE_URL = https://<nombre-de-tu-frontend>.onrender.com
-   AUTH0_ISSUER_BASE_URL = https://tu-tenant.us.auth0.com
-   AUTH0_CLIENT_ID = <desde Auth0 Application>
-   AUTH0_CLIENT_SECRET = <desde Auth0 Application>
+   Ejemplo: https://ads-backend.onrender.com
    ```
+   
+   **Variables de Auth0 (REQUERIDAS):**
+   ```
+   AUTH0_SECRET = <generar nuevo: openssl rand -hex 32>
+   AUTH0_BASE_URL = https://<nombre-exacto-del-servicio>.onrender.com
+   AUTH0_ISSUER_BASE_URL = https://<tu-tenant>.us.auth0.com
+   AUTH0_CLIENT_ID = <copiar desde Auth0 Dashboard → Applications → Tu App → Settings>
+   AUTH0_CLIENT_SECRET = <copiar desde Auth0 Dashboard → Applications → Tu App → Settings>
+   ```
+   
+   **Cómo generar AUTH0_SECRET:**
+   ```bash
+   # En tu terminal local (Git Bash, PowerShell, o terminal de Linux/Mac)
+   openssl rand -hex 32
+   
+   # Copia el resultado, ejemplo: a1b2c3d4e5f6...
+   ```
+   
+   **Dónde encontrar las credenciales de Auth0:**
+   1. Ve a [Auth0 Dashboard](https://manage.auth0.com)
+   2. Applications → Tu aplicación (ads-admin-frontend)
+   3. Settings tab → Basic Information
+   4. Copia **Domain**, **Client ID**, y **Client Secret**
+   
+   > [!CAUTION]
+   > **AUTH0_BASE_URL** debe coincidir EXACTAMENTE con la URL de tu servicio en Render. Si tu servicio se llama `ads-frontend-abc123`, la URL será `https://ads-frontend-abc123.onrender.com`
 
 5. Clic en **Create Web Service**
 6. **Esperar 5-10 minutos** para el deployment
@@ -128,84 +153,109 @@
 
 ### Paso 6: Configurar Auth0 para el Frontend
 
-1. Ir al Dashboard de Auth0 → **Applications**
-2. Seleccionar tu aplicación (o crear nueva **Regular Web Application**)
-3. **Settings**:
+> [!IMPORTANT]
+> Este paso es CRÍTICO. Sin esta configuración, el login no funcionará.
+
+1. Ir al [Dashboard de Auth0](https://manage.auth0.com) → **Applications**
+2. Crear nueva aplicación o seleccionar existente:
+   - Tipo: **Regular Web Application** (NO Single Page Application)
+   - Nombre: `Ads Admin Frontend`
+
+3. En la pestaña **Settings**, configurar **Application URIs**:
+   
+   **Allowed Callback URLs** (agregar AMBAS):
    ```
-   Name: Ads Admin Frontend
-   Application Type: Regular Web Application
-   
-   Allowed Callback URLs:
-   https://ads-frontend.onrender.com/api/auth/callback
-   
-   Allowed Logout URLs:
-   https://ads-frontend.onrender.com
-   
-   Allowed Web Origins:
-   https://ads-frontend.onrender.com
+   http://localhost:3000/api/auth/callback
+   https://ads-frontend-<tu-id>.onrender.com/api/auth/callback
    ```
-4. Copiar **Client ID** y **Client Secret**
-5. Actualizar variables de entorno del frontend en Render (repetir Paso 5.4 con valores reales)
+   
+   **Allowed Logout URLs** (agregar AMBAS):
+   ```
+   http://localhost:3000
+   https://ads-frontend-<tu-id>.onrender.com
+   ```
+   
+   **Allowed Web Origins** (agregar AMBAS):
+   ```
+   http://localhost:3000
+   https://ads-frontend-<tu-id>.onrender.com
+   ```
+   
+   > [!CAUTION]
+   > Reemplaza `<tu-id>` con el ID exacto de tu servicio Render. Ejemplo: si tu URL es `https://ads-frontend-abc123.onrender.com`, usa esa URL completa.
+
+4. **Copiar credenciales** (las necesitarás en el Paso 5):
+   - **Domain**: `dev-xyz.us.auth0.com` (copia sin `https://`)
+   - **Client ID**: `String largo alfanumérico`
+   - **Client Secret**: `String largo secreto` (click "Show" para verlo)
+
+5. **Guardar cambios** (botón al final de la página)
+
+6. **Volver a Render** y agregar/verificar las env vars del Paso 5 con estos valores
 
 ---
 
 ### Paso 7: Verificar el Deployment
 
-1. **Health Check del Backend**:
+1. **Backend Health Check**:
    ```
    https://ads-backend.onrender.com/health
    Esperado: {"status": "healthy"}
    ```
 
-2. **Documentación de la API del Backend**:
+2. **Backend API Docs**:
    ```
    https://ads-backend.onrender.com/docs
    Esperado: Swagger UI
    ```
 
-3. **Frontend**:
+3. **Frontend - Verificar que carga**:
    ```
    https://ads-frontend.onrender.com
-   Esperado: La página de inicio carga correctamente
+   Esperado: Página de inicio SIN errores de "Auth0 Configuration Required"
    ```
 
-4. **Probar Login**:
+4. **Probar Login Completo**:
    - Hacer clic en **Login** → Debe redirigir a Auth0
    - Iniciar sesión con usuario de prueba
-   - Debe redirigir de vuelta al dashboard
+   - Debe redirigir de vuelta al dashboard SIN errores
 
 ---
 
-## 🔧 Post-Deployment
+## � Solución de Problemas
 
-### Actualizar CORS (si es necesario)
-Si el frontend no puede conectarse al backend:
+| Problema | Causa | Solución |
+|:---------|:------|:---------|
+| **"Auth0 Configuration Required"** | Faltan variables de entorno en frontend | 1. Ve a Render → `ads-frontend` → Environment<br>2. Verifica que TODAS las variables AUTH0_* estén configuradas<br>3. Redeploy manual si es necesario |
+| **"Invalid token header"** | Problema de comunicación backend-frontend | 1. Verifica `NEXT_PUBLIC_API_URL` apunte al backend correcto<br>2. Verifica CORS en `backend/app/main.py` incluye frontend URL<br>3. Verifica `AUTH0_API_AUDIENCE` sea igual en backend y Auth0 API |
+| Backend no inicia | Formato de `DATABASE_URL` incorrecto | Verificar formato de `DATABASE_URL`, confirmar que todas las env vars estén configuradas |
+| Frontend muestra error 500 | `NEXT_PUBLIC_API_URL` incorrecto | Verificar que apunte a la URL del backend (debe terminar en `.onrender.com`) |
+| Falla el redirect de Auth0 | Callback URLs no coinciden | 1. Ir a Auth0 Dashboard → Applications → Settings<br>2. Verificar que **Allowed Callback URLs** incluya la URL exacta de Render<br>3. Debe ser: `https://tu-servicio.onrender.com/api/auth/callback` |
+| Errores de CORS | Frontend URL no está en allow_origins | Agregar URL del frontend a `allow_origins` en `backend/app/main.py` |
+| Free tier se duerme | Inactividad > 15 minutos | La primera petición después de inactividad toma ~30s en despertar |
+| **Variables de entorno no se aplican** | No se guardaron o no se hizo redeploy | 1. Guardar cambios en Render<br>2. Manual Deploy → Deploy latest commit |
 
-1. Editar `backend/app/main.py`:
-   ```python
-   allow_origins=[
-       "https://ads-frontend.onrender.com",  # Agregar esta línea
-   ],
+### Pasos Detallados para "Auth0 Configuration Required"
+
+Si ves este error en amarillo en el frontend:
+
+1. **Ir a Render Dashboard** → Seleccionar `ads-frontend`
+2. **Environment** (menú izquierdo)
+3. **Verificar estas 5 variables existen**:
    ```
-2. Push a GitHub → Auto-redeploy
-
-### Habilitar Auto-Deploy
-Ambos servicios se auto-deployean en push a `main` por defecto.
-
-### Monitorear Logs
-- Dashboard de Render → Seleccionar servicio → Pestaña **Logs**
+   AUTH0_SECRET = [string de 64 caracteres hexadecimales]
+   AUTH0_BASE_URL = https://ads-frontend-<id>.onrender.com
+   AUTH0_ISSUER_BASE_URL = https://<tenant>.us.auth0.com
+   AUTH0_CLIENT_ID = [Client ID desde Auth0]
+   AUTH0_CLIENT_SECRET = [Client Secret desde Auth0]
+   ```
+4. Si falta alguna, **Add Environment Variable**
+5. **Save Changes**
+6. Ir a **Manual Deploy** → **Deploy latest commit**
+7. Esperar 3-5 minutos al redeploy
+8. Refrescar el frontend
 
 ---
-
-## 🐛 Solución de Problemas
-
-| Problema | Solución |
-|:---------|:---------|
-| Backend no inicia | Verificar formato de `DATABASE_URL`, confirmar que todas las env vars estén configuradas |
-| Frontend muestra error 500 | Verificar que `NEXT_PUBLIC_API_URL` apunte a la URL del backend |
-| Falla el redirect de Auth0 | Verificar que las callback URLs en Auth0 coincidan exactamente con la URL del frontend |
-| Errores de CORS | Agregar URL del frontend a `allow_origins` del backend |
-| Free tier se duerme | La primera petición después de inactividad toma ~30s en despertar |
 
 ---
 
