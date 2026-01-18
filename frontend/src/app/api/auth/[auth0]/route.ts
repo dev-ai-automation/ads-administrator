@@ -21,14 +21,14 @@ export async function GET(req: NextRequest, context: { params: Promise<{ auth0: 
         switch (route) {
             case 'login': {
                 // Build login URL
-                const issuer = process.env.AUTH0_ISSUER_BASE_URL || `https://${process.env.AUTH0_DOMAIN}`;
+                const issuer = process.env['AUTH0_ISSUER_BASE_URL'] || `https://${process.env['AUTH0_DOMAIN']}`;
                 const returnTo = req.nextUrl.searchParams.get('returnTo') || '/dashboard';
                 const loginUrl = `${issuer}/authorize?` + new URLSearchParams({
-                    client_id: process.env.AUTH0_CLIENT_ID!,
+                    client_id: process.env['AUTH0_CLIENT_ID']!,
                     response_type: 'code',
-                    redirect_uri: `${process.env.AUTH0_BASE_URL}/api/auth/callback`,
+                    redirect_uri: `${process.env['AUTH0_BASE_URL']}/api/auth/callback`,
                     scope: 'openid profile email offline_access',
-                    audience: process.env.AUTH0_AUDIENCE || '',
+                    audience: process.env['AUTH0_AUDIENCE'] || '',
                     state: returnTo,
                 }).toString();
                 return NextResponse.redirect(loginUrl);
@@ -36,10 +36,10 @@ export async function GET(req: NextRequest, context: { params: Promise<{ auth0: 
 
             case 'logout': {
                 // Clear session and redirect
-                const issuer = process.env.AUTH0_ISSUER_BASE_URL || `https://${process.env.AUTH0_DOMAIN}`;
+                const issuer = process.env['AUTH0_ISSUER_BASE_URL'] || `https://${process.env['AUTH0_DOMAIN']}`;
                 const logoutUrl = `${issuer}/v2/logout?` + new URLSearchParams({
-                    client_id: process.env.AUTH0_CLIENT_ID!,
-                    returnTo: process.env.AUTH0_BASE_URL!,
+                    client_id: process.env['AUTH0_CLIENT_ID']!,
+                    returnTo: process.env['AUTH0_BASE_URL']!,
                 }).toString();
 
                 const response = NextResponse.redirect(logoutUrl);
