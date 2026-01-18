@@ -145,7 +145,7 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Frontend will be available at `http://localhost:3000`
+Frontend will be available at `http://localhost:10000`
 
 #### 4. Using Docker (Alternative)
 ```bash
