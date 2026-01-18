@@ -30,6 +30,7 @@
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
+    "types": ["jest", "node"],
     "plugins": [
       {
         "name": "next"
