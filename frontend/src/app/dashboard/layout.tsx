@@ -5,11 +5,16 @@
  * - Wraps all /dashboard/* routes
  * - Provides navigation and user context
  * - Is protected by middleware (redirects to login if not authenticated)
+ * 
+ * IMPORTANT: Must use dynamic rendering because it calls Auth0.getSession()
  */
 import { ReactNode } from 'react';
 import { auth0, isAuth0Configured } from '@/lib/auth0';
 import { redirect } from 'next/navigation';
 import styles from './layout.module.css';
+
+// Force dynamic rendering - required for Auth0 session access
+export const dynamic = 'force-dynamic';
 
 interface DashboardLayoutProps {
     children: ReactNode;
