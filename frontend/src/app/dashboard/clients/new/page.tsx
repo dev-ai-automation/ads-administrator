@@ -76,17 +76,17 @@ export default function NewClientPage() {
     };
 
     return (
-        <div className={styles.container}>
-            <div className={styles.card}>
-                <header className={styles.header}>
-                    <h1 className={styles.title}>New Client Onboarding</h1>
-                    <p className={styles.subtitle}>
+        <div className={styles['container']}>
+            <div className={styles['card']}>
+                <header className={styles['header']}>
+                    <h1 className={styles['title']}>New Client Onboarding</h1>
+                    <p className={styles['subtitle']}>
                         Set up a new workspace and connect your Meta Ads account.
                     </p>
                 </header>
 
                 {generalError && (
-                    <div className={styles.alert}>
+                    <div className={styles['alert']}>
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <circle cx="12" cy="12" r="10"></circle>
                             <line x1="12" y1="8" x2="12" y2="12"></line>
@@ -96,10 +96,10 @@ export default function NewClientPage() {
                     </div>
                 )}
 
-                <form onSubmit={handleSubmit} className={styles.form}>
+                <form onSubmit={handleSubmit} className={styles['form']}>
                     {/* Client Name */}
-                    <div className={styles.group}>
-                        <label htmlFor="name" className={styles.label}>
+                    <div className={styles['group']}>
+                        <label htmlFor="name" className={styles['label']}>
                             Client / Company Name
                         </label>
                         <input
@@ -109,21 +109,21 @@ export default function NewClientPage() {
                             placeholder="e.g. Acme Corp"
                             value={formData.name}
                             onChange={handleChange}
-                            className={styles.input}
+                            className={styles['input']}
                             disabled={isLoading}
                             autoFocus
                         />
-                        {fieldErrors.name && (
-                            <span className={styles.error}>{fieldErrors.name}</span>
+                        {fieldErrors['name'] && (
+                            <span className={styles['error']}>{fieldErrors['name']}</span>
                         )}
-                        <p className={styles.helper}>
+                        <p className={styles['helper']}>
                             This will be the display name for the client workspace.
                         </p>
                     </div>
 
                     {/* Meta Ad Account ID */}
-                    <div className={styles.group}>
-                        <label htmlFor="meta_ad_account_id" className={styles.label}>
+                    <div className={styles['group']}>
+                        <label htmlFor="meta_ad_account_id" className={styles['label']}>
                             Meta Ad Account ID
                         </label>
                         <input
@@ -133,20 +133,20 @@ export default function NewClientPage() {
                             placeholder="e.g. act_123456789"
                             value={formData.meta_ad_account_id}
                             onChange={handleChange}
-                            className={styles.input}
+                            className={styles['input']}
                             disabled={isLoading}
                         />
-                        {fieldErrors.meta_ad_account_id && (
-                            <span className={styles.error}>{fieldErrors.meta_ad_account_id}</span>
+                        {fieldErrors['meta_ad_account_id'] && (
+                            <span className={styles['error']}>{fieldErrors['meta_ad_account_id']}</span>
                         )}
-                        <p className={styles.helper}>
+                        <p className={styles['helper']}>
                             Found in your Meta Business settings.
                         </p>
                     </div>
 
                     {/* Meta Access Token */}
-                    <div className={styles.group}>
-                        <label htmlFor="meta_access_token" className={styles.label}>
+                    <div className={styles['group']}>
+                        <label htmlFor="meta_access_token" className={styles['label']}>
                             Meta Access Token
                         </label>
                         <input
@@ -156,13 +156,13 @@ export default function NewClientPage() {
                             placeholder="••••••••••••••••"
                             value={formData.meta_access_token}
                             onChange={handleChange}
-                            className={styles.input}
+                            className={styles['input']}
                             disabled={isLoading}
                         />
-                        {fieldErrors.meta_access_token && (
-                            <span className={styles.error}>{fieldErrors.meta_access_token}</span>
+                        {fieldErrors['meta_access_token'] && (
+                            <span className={styles['error']}>{fieldErrors['meta_access_token']}</span>
                         )}
-                        <p className={styles.helper}>
+                        <p className={styles['helper']}>
                             System User Access Token with `ads_read` and `ads_management` permissions.
                         </p>
                     </div>
@@ -172,7 +172,7 @@ export default function NewClientPage() {
                         <Link href="/dashboard/clients" style={{ flex: 1 }}>
                             <button
                                 type="button"
-                                className={styles.button}
+                                className={styles['button']}
                                 style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.2)' }}
                                 disabled={isLoading}
                             >
@@ -181,13 +181,13 @@ export default function NewClientPage() {
                         </Link>
                         <button
                             type="submit"
-                            className={styles.button}
+                            className={styles['button']}
                             style={{ flex: 2 }}
                             disabled={isLoading}
                         >
                             {isLoading ? (
                                 <>
-                                    <span className={styles.spinner}></span>
+                                    <span className={styles['spinner']}></span>
                                     Setting up...
                                 </>
                             ) : (
