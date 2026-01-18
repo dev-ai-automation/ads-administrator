@@ -8,11 +8,36 @@
  * - GET /api/auth/me - Get current user session
  * 
  * Uses Auth0Client for authentication management.
+ * Runtime-only to avoid build-time errors.
  * 
  * @see https://github.com/auth0/nextjs-auth0/blob/main/V4_MIGRATION_GUIDE.md
  */
 import { auth0 } from '@/lib/auth0';
 import { NextRequest, NextResponse } from 'next/server';
+
+// Force dynamic rendering - don't try to build this route statically
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
+/**
+ * Helper to get Auth0 issuer URL safely
+ */
+function getIssuerUrl(): string {
+    const issuerBase = process.env['AUTH0_ISSUER_BASE_URL'];
+    const domain = process.env['AUTH0_DOMAIN'];
+
+    if (issuerBase) {
+        return issuerBase;
+    }
+
+    if (domain) {
+        // Ensure it doesn't already have https://
+        const cleanDomain = domain.replace(/^https?:\/\//, '');
+        return `https://${cleanDomain}`;
+    }
+
+    throw new Error('AUTH0_ISSUER_BASE_URL or AUTH0_DOMAIN must be configured');
+}
 
 export async function GET(req: NextRequest, context: { params: Promise<{ auth0: string }> }) {
     const { auth0: route } = await context.params;
@@ -21,10 +46,10 @@ export async function GET(req: NextRequest, context: { params: Promise<{ auth0: 
         switch (route) {
             case 'login': {
                 // Build login URL
-                const issuer = process.env['AUTH0_ISSUER_BASE_URL'] || `https://${process.env['AUTH0_DOMAIN']}`;
+                const issuer = getIssuerUrl();
                 const returnTo = req.nextUrl.searchParams.get('returnTo') || '/dashboard';
                 const loginUrl = `${issuer}/authorize?` + new URLSearchParams({
-                    client_id: process.env['AUTH0_CLIENT_ID']!,
+                    client_id: process.env['AUTH0_CLIENT_ID'] || '',
                     response_type: 'code',
                     redirect_uri: `${process.env['AUTH0_BASE_URL']}/api/auth/callback`,
                     scope: 'openid profile email offline_access',
@@ -36,10 +61,10 @@ export async function GET(req: NextRequest, context: { params: Promise<{ auth0: 
 
             case 'logout': {
                 // Clear session and redirect
-                const issuer = process.env['AUTH0_ISSUER_BASE_URL'] || `https://${process.env['AUTH0_DOMAIN']}`;
+                const issuer = getIssuerUrl();
                 const logoutUrl = `${issuer}/v2/logout?` + new URLSearchParams({
-                    client_id: process.env['AUTH0_CLIENT_ID']!,
-                    returnTo: process.env['AUTH0_BASE_URL']!,
+                    client_id: process.env['AUTH0_CLIENT_ID'] || '',
+                    returnTo: process.env['AUTH0_BASE_URL'] || '',
                 }).toString();
 
                 const response = NextResponse.redirect(logoutUrl);
@@ -74,6 +99,9 @@ export async function GET(req: NextRequest, context: { params: Promise<{ auth0: 
         }
     } catch (error) {
         console.error('Auth route error:', error);
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+        return NextResponse.json({
+            error: 'Internal server error',
+            details: error instanceof Error ? error.message : 'Unknown error'
+        }, { status: 500 });
     }
 }
