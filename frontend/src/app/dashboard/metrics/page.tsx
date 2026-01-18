@@ -2,6 +2,7 @@ import { serverApi } from '@/lib/api/server';
 import { Page } from '@/components/ui/Page';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
+import { Table, THead, TBody, TR, TH, TD } from '@/components/ui/Table';
 import { MetricResponse } from '@/types/metric';
 
 export const dynamic = 'force-dynamic';
@@ -33,43 +34,43 @@ export default async function MetricsPage() {
           <p style={{ color: '#ef4444' }}>{error}</p>
         </Card>
       ) : (
-        <Card>
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr style={{ borderBottom: '1px solid #eee' }}>
-                  <th style={{ textAlign: 'left', padding: '1rem', color: '#666', fontWeight: 500 }}>Date</th>
-                  <th style={{ textAlign: 'left', padding: '1rem', color: '#666', fontWeight: 500 }}>Platform</th>
-                  <th style={{ textAlign: 'right', padding: '1rem', color: '#666', fontWeight: 500 }}>Impressions</th>
-                  <th style={{ textAlign: 'right', padding: '1rem', color: '#666', fontWeight: 500 }}>Clicks</th>
-                  <th style={{ textAlign: 'right', padding: '1rem', color: '#666', fontWeight: 500 }}>Spend</th>
-                  <th style={{ textAlign: 'right', padding: '1rem', color: '#666', fontWeight: 500 }}>Leads</th>
-                </tr>
-              </thead>
-              <tbody>
-                {metrics?.items.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} style={{ textAlign: 'center', padding: '3rem', color: '#999' }}>
+        <Card style={{ padding: 0 }}>
+          <Table>
+            <THead>
+              <TR>
+                <TH>Date</TH>
+                <TH>Platform</TH>
+                <TH align="right">Impressions</TH>
+                <TH align="right">Clicks</TH>
+                <TH align="right">Spend</TH>
+                <TH align="right">Leads</TH>
+              </TR>
+            </THead>
+            <TBody>
+              {metrics?.items.length === 0 ? (
+                <TR>
+                  <TD colSpan={6} align="center">
+                    <div style={{ padding: '3rem', color: '#999' }}>
                       No metrics found. Connect a Meta account to start syncing data.
-                    </td>
-                  </tr>
-                ) : (
-                  metrics?.items.map((m: MetricResponse) => (
-                    <tr key={m.id} style={{ borderBottom: '1px solid #fafafa' }}>
-                      <td style={{ padding: '1rem' }}>{new Date(m.date).toLocaleDateString()}</td>
-                      <td style={{ padding: '1rem' }}>
-                        <Badge variant="default">{m.platform}</Badge>
-                      </td>
-                      <td style={{ padding: '1rem', textAlign: 'right' }}>{m.impressions.toLocaleString()}</td>
-                      <td style={{ padding: '1rem', textAlign: 'right' }}>{m.clicks.toLocaleString()}</td>
-                      <td style={{ padding: '1rem', textAlign: 'right' }}>${m.spend.toFixed(2)}</td>
-                      <td style={{ padding: '1rem', textAlign: 'right' }}>{m.leads}</td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+                    </div>
+                  </TD>
+                </TR>
+              ) : (
+                metrics?.items.map((m: MetricResponse) => (
+                  <TR key={m.id}>
+                    <TD>{new Date(m.date).toLocaleDateString()}</TD>
+                    <TD>
+                      <Badge variant="default">{m.platform}</Badge>
+                    </TD>
+                    <TD align="right">{m.impressions.toLocaleString()}</TD>
+                    <TD align="right">{m.clicks.toLocaleString()}</TD>
+                    <TD align="right">${m.spend.toFixed(2)}</TD>
+                    <TD align="right">{m.leads}</TD>
+                  </TR>
+                ))
+              )}
+            </TBody>
+          </Table>
         </Card>
       )}
     </Page.Container>

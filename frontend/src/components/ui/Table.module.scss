@@ -1,0 +1,36 @@
+@use '@/styles/variables' as *;
+
+.wrapper {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: $radius-base;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  text-align: left;
+}
+
+.th {
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  color: $zinc-500;
+  border-bottom: 1px solid var(--border);
+  background: var(--background);
+}
+
+.td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--foreground);
+}
+
+.tr:last-child .td {
+  border-bottom: none;
+}
+
+.tr:hover {
+  background: var(--accent);
+}
