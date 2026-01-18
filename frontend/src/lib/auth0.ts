@@ -49,11 +49,11 @@ function getAuth0Client(): Auth0Client {
  * Auth0 client with lazy initialization
  */
 export const auth0 = {
-    getSession: async (...args: Parameters<Auth0Client['getSession']>) => {
-        return getAuth0Client().getSession(...args);
+    async getSession(req?: any) {
+        return getAuth0Client().getSession(req);
     },
-    getAccessToken: async (...args: Parameters<Auth0Client['getAccessToken']>) => {
-        return getAuth0Client().getAccessToken(...args);
+    async getAccessToken(req?: any, res?: any) {
+        return getAuth0Client().getAccessToken(req, res);
     },
 };
 
