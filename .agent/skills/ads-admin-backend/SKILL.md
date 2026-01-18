@@ -19,6 +19,10 @@ description: Project-specific backend rules for Ads Administrator API. Use when 
 
 ```
 backend/
+├── alembic/                 # Database migrations
+│   ├── versions/            # Migration scripts
+│   └── env.py               # Alembic config for async SQLAlchemy
+├── alembic.ini              # Alembic configuration
 ├── app/
 │   ├── main.py              # FastAPI app entry
 │   ├── api/v1/              # API routers
@@ -67,6 +71,13 @@ cd backend && pytest
 
 # Install dependencies
 cd backend && pip install -r requirements.txt
+
+# Database Migrations
+cd backend && alembic upgrade head           # Apply all migrations
+cd backend && alembic downgrade -1           # Rollback one migration
+cd backend && alembic revision --autogenerate -m "description"  # Generate migration
+cd backend && alembic current                 # Show current revision
+cd backend && alembic history                 # Show migration history
 ```
 
 ## Resources
