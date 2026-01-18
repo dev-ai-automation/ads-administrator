@@ -1,0 +1,16 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Install dependencies based on package lock
+COPY package.json package-lock.json* ./
+RUN npm install
+
+# Copy source code
+COPY . .
+
+# Expose port (must match package.json and docker-compose)
+EXPOSE 10000
+
+# Start development server
+CMD ["npm", "run", "dev"]
