@@ -1,17 +1,38 @@
-// Colors
-$background-light: #ffffff;
-$foreground-light: #171717;
+// Ultra-Minimalist Design System (inspired by Modern Web)
 
-$background-dark: #0a0a0a;
-$foreground-dark: #ededed;
+// Colors - Zinc Palette
+$zinc-50: #fafafa;
+$zinc-100: #f4f4f5;
+$zinc-200: #e4e4e7;
+$zinc-300: #d4d4d8;
+$zinc-400: #a1a1aa;
+$zinc-500: #71717a;
+$zinc-600: #52525b;
+$zinc-700: #3f3f46;
+$zinc-800: #27272a;
+$zinc-900: #18181b;
+$zinc-950: #09090b;
 
-$primary-color: #0070f3; // Next.js blue style
+// Semantic Colors
+$background-light: $zinc-50;
+$foreground-light: $zinc-950;
+
+$background-dark: $zinc-950;
+$foreground-dark: $zinc-50;
+
+$primary-color: $zinc-900;
+$primary-foreground: $zinc-50;
+
 $error-color: #ef4444;
-$success-color: #22c55e;
+$success-color: #10b981;
 $warning-color: #f59e0b;
 
-// Spacing
-$spacing-unit: 8px;
+$border-light: $zinc-200;
+$border-dark: $zinc-800;
+
+// Layout
+$radius-base: 0.5rem;
+$radius-lg: 0.75rem;
 
 // Breakpoints
 $mobile: 640px;

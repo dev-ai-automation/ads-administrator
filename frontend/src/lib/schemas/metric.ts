@@ -58,7 +58,7 @@ export const MetricResponseSchema = MetricBaseSchema.extend({
   id: z.number().int().positive(),
   client_id: z.number().int().positive(),
   raw_data: z.record(z.string(), z.unknown()),
-  created_at: z.string().datetime(),
+  created_at: z.string(),
 });
 
 /**
@@ -77,8 +77,8 @@ export const MetricListResponseSchema = z.object({
 export const MetricSummarySchema = z.object({
   client_id: z.number().int().positive(),
   platform: z.string(),
-  date_from: z.string().datetime(),
-  date_to: z.string().datetime(),
+  date_from: z.string(),
+  date_to: z.string(),
   total_impressions: z.number().int().nonnegative(),
   total_clicks: z.number().int().nonnegative(),
   total_spend: z.number().nonnegative(),

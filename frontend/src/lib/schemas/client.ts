@@ -76,8 +76,8 @@ export const ClientResponseSchema = ClientBaseSchema.merge(
 ).extend({
   id: z.number().int().positive(),
   config: z.record(z.string(), z.unknown()),
-  created_at: z.string().datetime(),
-  updated_at: z.string().datetime().nullable().optional(),
+  created_at: z.string(),
+  updated_at: z.string().nullable().optional(),
 });
 
 /**
