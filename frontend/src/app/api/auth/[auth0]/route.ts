@@ -12,7 +12,7 @@
  * 
  * @see https://github.com/auth0/nextjs-auth0/blob/main/V4_MIGRATION_GUIDE.md
  */
-import { auth0 } from '@/lib/auth0';
+import { auth0, getBaseUrl } from '@/lib/auth0';
 import { NextRequest, NextResponse } from 'next/server';
 
 // Force dynamic rendering - don't try to build this route statically
@@ -42,6 +42,9 @@ function getIssuerUrl(): string {
 export async function GET(req: NextRequest, context: { params: Promise<{ auth0: string }> }) {
     const { auth0: route } = await context.params;
 
+    // Resolve Base URL dynamically (supports Render RENDER_EXTERNAL_URL)
+    const baseUrl = getBaseUrl();
+
     try {
         switch (route) {
             case 'login': {
@@ -51,7 +54,7 @@ export async function GET(req: NextRequest, context: { params: Promise<{ auth0: 
                 const loginUrl = `${issuer}/authorize?` + new URLSearchParams({
                     client_id: process.env['AUTH0_CLIENT_ID'] || '',
                     response_type: 'code',
-                    redirect_uri: `${process.env['AUTH0_BASE_URL']}/api/auth/callback`,
+                    redirect_uri: `${baseUrl}/api/auth/callback`,
                     scope: 'openid profile email offline_access',
                     audience: process.env['AUTH0_AUDIENCE'] || '',
                     state: returnTo,
@@ -64,7 +67,7 @@ export async function GET(req: NextRequest, context: { params: Promise<{ auth0: 
                 const issuer = getIssuerUrl();
                 const logoutUrl = `${issuer}/v2/logout?` + new URLSearchParams({
                     client_id: process.env['AUTH0_CLIENT_ID'] || '',
-                    returnTo: process.env['AUTH0_BASE_URL'] || '',
+                    returnTo: baseUrl,
                 }).toString();
 
                 const response = NextResponse.redirect(logoutUrl);

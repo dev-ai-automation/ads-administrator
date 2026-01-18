@@ -26,7 +26,7 @@ function getAuth0Client(): Auth0Client {
             domain: process.env['AUTH0_DOMAIN'] || process.env['AUTH0_ISSUER_BASE_URL']?.replace('https://', ''),
 
             // App base URL
-            appBaseUrl: process.env['AUTH0_BASE_URL'] || process.env['APP_BASE_URL'],
+            appBaseUrl: getBaseUrl(),
 
             // Client credentials
             clientId: process.env['AUTH0_CLIENT_ID'],
@@ -98,11 +98,34 @@ export async function getAccessToken(): Promise<string> {
 }
 
 /**
+ * Get the application base URL with Render support.
+ */
+export function getBaseUrl(): string {
+    // 1. Explicit Auth0 configuration
+    if (process.env['AUTH0_BASE_URL']) {
+        return process.env['AUTH0_BASE_URL'];
+    }
+
+    // 2. Render External URL (Automatic on Render)
+    if (process.env['RENDER_EXTERNAL_URL']) {
+        return process.env['RENDER_EXTERNAL_URL'];
+    }
+
+    // 3. Generic App Base URL
+    if (process.env['APP_BASE_URL']) {
+        return process.env['APP_BASE_URL'];
+    }
+
+    // 4. Default to localhost for development
+    return 'http://localhost:10000';
+}
+
+/**
  * Check if Auth0 is configured (environment variables are set).
  */
 export function isAuth0Configured(): boolean {
     const domain = process.env['AUTH0_DOMAIN'] || process.env['AUTH0_ISSUER_BASE_URL'];
-    const baseUrl = process.env['AUTH0_BASE_URL'] || process.env['APP_BASE_URL'];
+    const baseUrl = getBaseUrl();
     const required = [domain, baseUrl, process.env['AUTH0_CLIENT_ID'], process.env['AUTH0_CLIENT_SECRET'], process.env['AUTH0_SECRET']];
     return required.every(val => Boolean(val));
 }
