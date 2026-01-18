@@ -25,10 +25,12 @@ export async function middleware(request: NextRequest) {
     }
 
     // ==========================================================================
-    // Handle Auth0 routes - MUST be first
+    // Skip Auth0 API routes - they are handled by Route Handlers
     // ==========================================================================
-    if (pathname.startsWith('/auth')) {
-        return auth0.middleware(request);
+    if (pathname.startsWith('/api/auth')) {
+        // These routes are handled by /app/api/auth/[auth0]/route.ts
+        // Don't process them in middleware
+        return NextResponse.next();
     }
 
     // ==========================================================================
@@ -44,13 +46,13 @@ export async function middleware(request: NextRequest) {
 
             if (!session) {
                 // User not authenticated - redirect to login
-                const loginUrl = new URL('/auth/login', request.url);
+                const loginUrl = new URL('/api/auth/login', request.url);
                 loginUrl.searchParams.set('returnTo', pathname);
                 return NextResponse.redirect(loginUrl);
             }
         } catch {
             // Session error - redirect to login
-            return NextResponse.redirect(new URL('/auth/login', request.url));
+            return NextResponse.redirect(new URL('/api/auth/login', request.url));
         }
     }
 

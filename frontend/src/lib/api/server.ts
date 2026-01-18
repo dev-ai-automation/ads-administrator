@@ -61,8 +61,13 @@ async function serverFetch<T>(
     let token: string | null = null;
     try {
         token = await getAccessToken();
-    } catch {
-        // Auth0 not configured - continue without token for development
+    } catch (error) {
+        // If Auth0 is not configured or token cannot be obtained, throw descriptive error
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        throw new Error(
+            `Authentication failed: ${errorMessage}. ` +
+            'Please ensure Auth0 is configured correctly. See frontend/.env.example for required variables.'
+        );
     }
 
     // Build URL with query params
