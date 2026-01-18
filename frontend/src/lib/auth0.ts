@@ -47,7 +47,7 @@ export function getAuth0Client(): Auth0Client {
         ...(process.env['AUTH0_AUDIENCE'] && {
           audience: process.env['AUTH0_AUDIENCE'],
         }),
-        scope: 'openid profile email offline_access',
+        scope: 'openid profile email offline_access admin read:clients write:clients delete:clients read:metrics',
       },
 
       // Auth0 SDK v4 routes (no /api prefix)
