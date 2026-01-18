@@ -19,7 +19,11 @@ import { Auth0Client } from '@auth0/nextjs-auth0/server';
  */
 let _auth0Client: Auth0Client | null = null;
 
-function getAuth0Client(): Auth0Client {
+/**
+ * Get Auth0 client instance (exported for middleware use).
+ * Uses lazy initialization to avoid build-time errors.
+ */
+export function getAuth0Client(): Auth0Client {
     if (!_auth0Client) {
         _auth0Client = new Auth0Client({
             // Domain can be set via AUTH0_DOMAIN or domain option
@@ -39,6 +43,14 @@ function getAuth0Client(): Auth0Client {
             authorizationParameters: {
                 audience: process.env['AUTH0_AUDIENCE'],
                 scope: 'openid profile email offline_access',
+            },
+
+            // Auth0 SDK v4 routes (no /api prefix)
+            // The middleware handles these routes automatically
+            routes: {
+                login: '/auth/login',
+                logout: '/auth/logout',
+                callback: '/auth/callback',
             },
         });
     }
