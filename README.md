@@ -150,6 +150,7 @@ Frontend will be available at `http://localhost:10000`
 #### 4. Using Docker (Alternative)
 ```bash
 # Start all services
+# Note: Ensure you have created 'frontend/.env.local' and 'backend/.env' first!
 docker-compose up --build
 
 # Run tests

@@ -57,13 +57,15 @@ app = FastAPI(
 # =============================================================================
 
 # CORS - Allow frontend access
+# CORS - Allow frontend access
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:3000",  # Next.js dev server
+        "http://localhost:3000",
+        "http://localhost:10000", # Added purely for safe local testing parity
         "http://127.0.0.1:3000",
-        "https://*.onrender.com",  # Render.com deployments
     ],
+    allow_origin_regex=r"https://.*\.onrender\.com",  # Allow all Render subdomains
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

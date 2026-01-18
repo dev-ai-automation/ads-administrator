@@ -25,15 +25,6 @@ export async function middleware(request: NextRequest) {
     }
 
     // ==========================================================================
-    // Skip Auth0 API routes - they are handled by Route Handlers
-    // ==========================================================================
-    if (pathname.startsWith('/api/auth')) {
-        // These routes are handled by /app/api/auth/[auth0]/route.ts
-        // Don't process them in middleware
-        return NextResponse.next();
-    }
-
-    // ==========================================================================
     // Check if route requires authentication
     // ==========================================================================
     const isProtectedRoute = PROTECTED_ROUTES.some(route =>
@@ -70,11 +61,12 @@ export const config = {
     matcher: [
         /*
          * Match all request paths except:
+         * - api (API routes)
          * - _next/static (static files)
          * - _next/image (image optimization)
          * - favicon.ico (favicon)
          * - public folder
          */
-        '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+        '/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
     ],
 };
