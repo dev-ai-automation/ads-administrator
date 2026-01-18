@@ -101,14 +101,15 @@ export async function getAccessToken(): Promise<string> {
  * Get the application base URL with Render support.
  */
 export function getBaseUrl(): string {
-    // 1. Explicit Auth0 configuration
-    if (process.env['AUTH0_BASE_URL']) {
-        return process.env['AUTH0_BASE_URL'];
-    }
-
-    // 2. Render External URL (Automatic on Render)
+    // 1. Render External URL (Automatic and always correct on Render)
+    // This takes priority because Render automatically sets it correctly
     if (process.env['RENDER_EXTERNAL_URL']) {
         return process.env['RENDER_EXTERNAL_URL'];
+    }
+
+    // 2. Explicit Auth0 configuration (fallback for non-Render deployments)
+    if (process.env['AUTH0_BASE_URL']) {
+        return process.env['AUTH0_BASE_URL'];
     }
 
     // 3. Generic App Base URL

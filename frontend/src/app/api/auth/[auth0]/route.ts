@@ -82,11 +82,12 @@ export async function GET(req: NextRequest, context: { params: Promise<{ auth0: 
                 const state = req.nextUrl.searchParams.get('state') || '/dashboard';
 
                 if (!code) {
-                    return NextResponse.redirect(new URL('/api/auth/login', req.url));
+                    return NextResponse.redirect(new URL('/api/auth/login', baseUrl));
                 }
 
                 // Redirect to the return URL (state parameter)
-                return NextResponse.redirect(new URL(state, req.url));
+                // Use baseUrl to ensure redirect goes to correct external URL
+                return NextResponse.redirect(new URL(state, baseUrl));
             }
 
             case 'me': {
