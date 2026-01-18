@@ -3,6 +3,7 @@
  * 
  * This is a Server Component that fetches data using the serverApi.
  */
+import Link from 'next/link';
 import { serverApi } from '@/lib/api/server';
 import styles from './page.module.css';
 
@@ -38,7 +39,7 @@ export default async function DashboardPage() {
                         </div>
                         <div className={styles['statCard']}>
                             <span className={styles['statValue']}>
-                                {clients?.items.filter(c => c['active']).length ?? 0}
+                                {clients?.items.filter((c: any) => c['active']).length ?? 0}
                             </span>
                             <span className={styles['statLabel']}>Active Clients</span>
                         </div>
@@ -48,18 +49,18 @@ export default async function DashboardPage() {
                         <h2>Recent Clients</h2>
                         {clients?.items.length === 0 ? (
                             <p className={styles['empty']}>
-                                No clients yet. <a href="/dashboard/clients/new">Create your first client</a>.
+                                No clients yet. <Link href="/dashboard/clients/new">Create your first client</Link>.
                             </p>
                         ) : (
                             <ul className={styles['clientList']}>
-                                {clients?.items.map(client => (
+                                {clients?.items.map((client: any) => (
                                     <li key={client['id']} className={styles['clientItem']}>
-                                        <a href={`/dashboard/clients/${client['id']}`}>
+                                        <Link href={`/dashboard/clients/${client['id']}`}>
                                             <strong>{client['name']}</strong>
                                             <span className={client['active'] ? styles['active'] : styles['inactive']}>
                                                 {client['active'] ? 'Active' : 'Inactive'}
                                             </span>
-                                        </a>
+                                        </Link>
                                     </li>
                                 ))}
                             </ul>
