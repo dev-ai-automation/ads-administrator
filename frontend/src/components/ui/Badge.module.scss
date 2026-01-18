@@ -1,0 +1,37 @@
+@use '@/styles/variables' as *;
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.success {
+  background: rgba($success-color, 0.15);
+  color: $success-color;
+  border: 1px solid rgba($success-color, 0.2);
+}
+
+.warning {
+  background: rgba($warning-color, 0.15);
+  color: $warning-color;
+  border: 1px solid rgba($warning-color, 0.2);
+}
+
+.error {
+  background: rgba($error-color, 0.15);
+  color: $error-color;
+  border: 1px solid rgba($error-color, 0.2);
+}
+
+.default {
+  background: rgba(128, 128, 128, 0.15);
+  color: gray;
+  border: 1px solid rgba(128, 128, 128, 0.2);
+}

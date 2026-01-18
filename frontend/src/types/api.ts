@@ -6,28 +6,28 @@
  * Generic API success response wrapper.
  */
 export interface ApiResponse<T> {
-    data: T;
-    success: true;
+  data: T;
+  success: true;
 }
 
 /**
  * API error response structure.
  */
 export interface ApiError {
-    success: false;
-    message: string;
-    detail?: string;
-    status: number;
+  success: false;
+  message: string;
+  detail?: string;
+  status: number;
 }
 
 /**
  * Generic paginated response.
  */
 export interface PaginatedResponse<T> {
-    items: T[];
-    total: number;
-    page: number;
-    page_size: number;
+  items: T[];
+  total: number;
+  page: number;
+  page_size: number;
 }
 
 /**

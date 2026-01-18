@@ -1,0 +1,50 @@
+@use '@/styles/variables' as *;
+
+.input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: white;
+  border: 1px solid rgba(0,0,0,0.1);
+  border-radius: 8px;
+  color: #171717;
+  font-size: 1rem;
+  transition: all 0.2s;
+  font-family: inherit;
+
+  &::placeholder {
+    color: #a1a1aa;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: $primary-color;
+    box-shadow: 0 0 0 3px rgba($primary-color, 0.1);
+  }
+
+  &:disabled {
+    background: #f5f5f5;
+    cursor: not-allowed;
+    opacity: 0.7;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    background: rgba(255,255,255,0.05);
+    border-color: rgba(255,255,255,0.1);
+    color: #ededed;
+
+    &:focus {
+       box-shadow: 0 0 0 3px rgba($primary-color, 0.25);
+    }
+
+    &:disabled {
+      background: rgba(255,255,255,0.02);
+    }
+  }
+
+  &.error {
+    border-color: $error-color;
+    &:focus {
+       box-shadow: 0 0 0 3px rgba($error-color, 0.1);
+    }
+  }
+}

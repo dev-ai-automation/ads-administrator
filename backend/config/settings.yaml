@@ -1,0 +1,21 @@
+app:
+  project_name: "Ads Administrator"
+  api_v1_str: "/api/v1"
+  debug: ${DEBUG:-false}
+
+auth0:
+  domain: ${AUTH0_DOMAIN:-dev-dummy.auth0.com}
+  api_audience: ${AUTH0_API_AUDIENCE:-https://api.dummy.com}
+  algorithm: ${AUTH0_ALGORITHM:-RS256}
+
+database:
+  url: ${DATABASE_URL:-postgresql+asyncpg://user:pass@localhost:5432/db}
+  postgres_user: ${POSTGRES_USER}
+  postgres_password: ${POSTGRES_PASSWORD}
+  postgres_server: ${POSTGRES_SERVER:-localhost}
+  postgres_port: ${POSTGRES_PORT:-5432}
+  postgres_db: ${POSTGRES_DB}
+
+meta:
+  app_id: ${META_APP_ID}
+  app_secret: ${META_APP_SECRET}

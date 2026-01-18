@@ -19,20 +19,15 @@ export default function Home() {
         <div className={styles['intro']}>
           <h1>Ads Administrator</h1>
           <p>
-            Manage your advertising clients and track their Meta Ads performance.
+            Manage your advertising clients and track their Meta Ads
+            performance.
           </p>
         </div>
         <div className={styles['ctas']}>
-          <a
-            className={styles['primary']}
-            href="/dashboard"
-          >
+          <a className={styles['primary']} href="/dashboard">
             Go to Dashboard
           </a>
-          <a
-            className={styles['secondary']}
-            href="/docs"
-          >
+          <a className={styles['secondary']} href="/docs">
             Documentation
           </a>
         </div>

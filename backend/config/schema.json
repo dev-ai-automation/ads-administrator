@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Application Configuration Schema",
+  "type": "object",
+  "properties": {
+    "app": {
+      "type": "object",
+      "properties": {
+        "project_name": { "type": "string" },
+        "api_v1_str": { "type": "string" },
+        "debug": { "type": "boolean" }
+      },
+      "required": ["project_name", "api_v1_str", "debug"]
+    },
+    "auth0": {
+      "type": "object",
+      "properties": {
+        "domain": { "type": "string" },
+        "api_audience": { "type": "string" },
+        "algorithm": { "type": "string", "default": "RS256" }
+      },
+      "required": ["domain", "api_audience"]
+    },
+    "database": {
+      "type": "object",
+      "properties": {
+        "url": { "type": ["string", "null"] },
+        "postgres_user": { "type": ["string", "null"] },
+        "postgres_password": { "type": ["string", "null"] },
+        "postgres_server": { "type": "string", "default": "localhost" },
+        "postgres_port": { "type": "integer", "default": 5432 },
+        "postgres_db": { "type": ["string", "null"] }
+      }
+    },
+    "meta": {
+      "type": "object",
+      "properties": {
+        "app_id": { "type": ["string", "null"] },
+        "app_secret": { "type": ["string", "null"] }
+      }
+    }
+  },
+  "required": ["app", "auth0"]
+}

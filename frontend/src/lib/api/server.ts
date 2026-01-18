@@ -1,13 +1,13 @@
 /**
  * Server-Side API Client - For use in Server Components and API Routes.
- * 
+ *
  * This wrapper automatically injects the Auth0 access token into requests.
  * Use this instead of the regular `api` client when calling from server-side code.
- * 
+ *
  * @example
  * // In a Server Component:
  * import { serverApi } from '@/lib/api/server';
- * 
+ *
  * export default async function DashboardPage() {
  *   const clients = await serverApi.clients.list();
  *   return <ClientList items={clients.items} />;
@@ -15,104 +15,113 @@
  */
 import { getAccessToken } from '@/lib/auth0';
 import {
-    ClientResponseSchema,
-    ClientListResponseSchema,
-    MetricListResponseSchema,
-    MetricSummarySchema,
-    UserProfileSchema,
+  ClientResponseSchema,
+  ClientListResponseSchema,
+  MetricListResponseSchema,
+  MetricSummarySchema,
+  UserProfileSchema,
 } from '@/lib/schemas';
 import type {
-    ClientCreate,
-    ClientUpdate,
-    ClientResponse,
-    ClientListResponse,
-    ClientListParams,
-    MetricListResponse,
-    MetricListParams,
-    MetricSummary,
-    MetricSummaryParams,
-    UserProfile,
+  ClientCreate,
+  ClientUpdate,
+  ClientResponse,
+  ClientListResponse,
+  ClientListParams,
+  MetricListResponse,
+  MetricListParams,
+  MetricSummary,
+  MetricSummaryParams,
+  UserProfile,
 } from '@/types';
 
 // =============================================================================
 // CONFIGURATION
 // =============================================================================
 
-const API_BASE_URL = process.env['NEXT_PUBLIC_API_URL'] ?? 'http://localhost:8000';
+const API_BASE_URL =
+  process.env['NEXT_PUBLIC_API_URL'] ?? 'http://localhost:8000';
 
 // =============================================================================
 // CORE FETCH FUNCTION
 // =============================================================================
 
 interface FetchOptions {
-    method?: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
-    body?: unknown;
-    params?: Record<string, string | number | boolean | undefined>;
+  method?: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
+  body?: unknown;
+  params?: Record<string, string | number | boolean | undefined>;
 }
 
 async function serverFetch<T>(
-    path: string,
-    options: FetchOptions = {},
-    schema?: { parse: (data: unknown) => T }
+  path: string,
+  options: FetchOptions = {},
+  schema?: { parse: (data: unknown) => T }
 ): Promise<T> {
-    const { method = 'GET', body, params } = options;
+  const { method = 'GET', body, params } = options;
 
-    // Get access token from Auth0 (may fail if not configured)
-    let token: string | null = null;
-    try {
-        token = await getAccessToken();
-    } catch (error) {
-        // If Auth0 is not configured or token cannot be obtained, throw descriptive error
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        throw new Error(
-            `Authentication failed: ${errorMessage}. ` +
-            'Please ensure Auth0 is configured correctly. See frontend/.env.example for required variables.'
-        );
-    }
+  // Get access token from Auth0 (may fail if not configured)
+  let token: string | null = null;
+  try {
+    token = await getAccessToken();
+  } catch (error) {
+    // If Auth0 is not configured or token cannot be obtained, throw descriptive error
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown error';
+    throw new Error(
+      `Authentication failed: ${errorMessage}. ` +
+        'Please ensure Auth0 is configured correctly. See frontend/.env.example for required variables.'
+    );
+  }
 
-    // Build URL with query params
-    const url = new URL(`${API_BASE_URL}${path}`);
-    if (params) {
-        Object.entries(params).forEach(([key, value]) => {
-            if (value !== undefined) {
-                url.searchParams.append(key, String(value));
-            }
-        });
-    }
-
-    // Make request
-    const response = await fetch(url.toString(), {
-        method,
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-        },
-        body: body ? JSON.stringify(body) : undefined,
-        // Disable Next.js caching for API calls
-        cache: 'no-store',
+  // Build URL with query params
+  const url = new URL(`${API_BASE_URL}${path}`);
+  if (params) {
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined) {
+        url.searchParams.append(key, String(value));
+      }
     });
+  }
 
-    // Handle errors
-    if (!response.ok) {
-        const errorBody = await response.json().catch(() => ({}));
-        throw new Error(
-            errorBody['detail'] ?? errorBody['message'] ?? `API Error: ${response.status}`
-        );
-    }
+  // Make request
+  const init: RequestInit = {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    // Disable Next.js caching for API calls
+    cache: 'no-store',
+  };
 
-    // Handle 204 No Content
-    if (response.status === 204) {
-        return undefined as T;
-    }
+  if (body) {
+    init.body = JSON.stringify(body);
+  }
 
-    // Parse and validate response
-    const data = await response.json();
+  const response = await fetch(url.toString(), init);
 
-    if (schema) {
-        return schema.parse(data);
-    }
+  // Handle errors
+  if (!response.ok) {
+    const errorBody = await response.json().catch(() => ({}));
+    throw new Error(
+      errorBody['detail'] ??
+        errorBody['message'] ??
+        `API Error: ${response.status}`
+    );
+  }
 
-    return data as T;
+  // Handle 204 No Content
+  if (response.status === 204) {
+    return undefined as T;
+  }
+
+  // Parse and validate response
+  const data = await response.json();
+
+  if (schema) {
+    return schema.parse(data);
+  }
+
+  return data as T;
 }
 
 // =============================================================================
@@ -123,68 +132,79 @@ async function serverFetch<T>(
  * Server-side API services for use in Server Components.
  */
 export const serverApi = {
-    /**
-     * Client operations.
-     */
-    clients: {
-        async list(params?: ClientListParams): Promise<ClientListResponse> {
-            return serverFetch(
-                '/api/v1/clients',
-                { params: params as FetchOptions['params'] },
-                ClientListResponseSchema
-            );
-        },
-
-        async get(id: number): Promise<ClientResponse> {
-            return serverFetch(`/api/v1/clients/${id}`, {}, ClientResponseSchema);
-        },
-
-        async create(data: ClientCreate): Promise<ClientResponse> {
-            return serverFetch('/api/v1/clients', { method: 'POST', body: data }, ClientResponseSchema);
-        },
-
-        async update(id: number, data: ClientUpdate): Promise<ClientResponse> {
-            return serverFetch(`/api/v1/clients/${id}`, { method: 'PATCH', body: data }, ClientResponseSchema);
-        },
-
-        async delete(id: number): Promise<void> {
-            return serverFetch(`/api/v1/clients/${id}`, { method: 'DELETE' });
-        },
+  /**
+   * Client operations.
+   */
+  clients: {
+    async list(params?: ClientListParams): Promise<ClientListResponse> {
+      return serverFetch(
+        '/api/v1/clients',
+        { ...(params && { params: params as Exclude<FetchOptions['params'], undefined> }) },
+        ClientListResponseSchema
+      );
     },
 
-    /**
-     * Metrics operations.
-     */
-    metrics: {
-        async list(params?: MetricListParams): Promise<MetricListResponse> {
-            return serverFetch(
-                '/api/v1/metrics',
-                { params: params as FetchOptions['params'] },
-                MetricListResponseSchema
-            );
-        },
-
-        async getSummary(clientId: number, params?: MetricSummaryParams): Promise<MetricSummary> {
-            return serverFetch(
-                `/api/v1/metrics/summary/${clientId}`,
-                { params: params as FetchOptions['params'] },
-                MetricSummarySchema
-            );
-        },
+    async get(id: number): Promise<ClientResponse> {
+      return serverFetch(`/api/v1/clients/${id}`, {}, ClientResponseSchema);
     },
 
-    /**
-     * User operations.
-     */
-    users: {
-        async getProfile(): Promise<UserProfile> {
-            return serverFetch('/api/v1/users/me', {}, UserProfileSchema);
-        },
-
-        async getPermissions(): Promise<string[]> {
-            return serverFetch('/api/v1/users/me/permissions');
-        },
+    async create(data: ClientCreate): Promise<ClientResponse> {
+      return serverFetch(
+        '/api/v1/clients',
+        { method: 'POST', body: data },
+        ClientResponseSchema
+      );
     },
+
+    async update(id: number, data: ClientUpdate): Promise<ClientResponse> {
+      return serverFetch(
+        `/api/v1/clients/${id}`,
+        { method: 'PATCH', body: data },
+        ClientResponseSchema
+      );
+    },
+
+    async delete(id: number): Promise<void> {
+      return serverFetch(`/api/v1/clients/${id}`, { method: 'DELETE' });
+    },
+  },
+
+  /**
+   * Metrics operations.
+   */
+  metrics: {
+    async list(params?: MetricListParams): Promise<MetricListResponse> {
+      return serverFetch(
+        '/api/v1/metrics',
+        { ...(params && { params: params as Exclude<FetchOptions['params'], undefined> }) },
+        MetricListResponseSchema
+      );
+    },
+
+    async getSummary(
+      clientId: number,
+      params?: MetricSummaryParams
+    ): Promise<MetricSummary> {
+      return serverFetch(
+        `/api/v1/metrics/summary/${clientId}`,
+        { ...(params && { params: params as Exclude<FetchOptions['params'], undefined> }) },
+        MetricSummarySchema
+      );
+    },
+  },
+
+  /**
+   * User operations.
+   */
+  users: {
+    async getProfile(): Promise<UserProfile> {
+      return serverFetch('/api/v1/users/me', {}, UserProfileSchema);
+    },
+
+    async getPermissions(): Promise<string[]> {
+      return serverFetch('/api/v1/users/me/permissions');
+    },
+  },
 };
 
 export default serverApi;

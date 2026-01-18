@@ -15,16 +15,16 @@ export type HttpMethod = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
  * Common query parameters for paginated endpoints.
  */
 export interface PaginationParams {
-    page?: number;
-    page_size?: number;
+  page?: number;
+  page_size?: number;
 }
 
 /**
  * Date range filter parameters.
  */
 export interface DateRangeParams {
-    date_from?: string;
-    date_to?: string;
+  date_from?: string;
+  date_to?: string;
 }
 
 // =============================================================================
@@ -40,17 +40,17 @@ export type LoadingState = 'idle' | 'loading' | 'success' | 'error';
  * Generic async data state for components.
  */
 export interface AsyncState<T> {
-    data: T | null;
-    loading: boolean;
-    error: string | null;
+  data: T | null;
+  loading: boolean;
+  error: string | null;
 }
 
 /**
  * Table sort configuration.
  */
 export interface SortConfig<T> {
-    key: keyof T;
-    direction: 'asc' | 'desc';
+  key: keyof T;
+  direction: 'asc' | 'desc';
 }
 
 // =============================================================================
@@ -61,18 +61,18 @@ export interface SortConfig<T> {
  * Form field error state.
  */
 export interface FieldError {
-    field: string;
-    message: string;
+  field: string;
+  message: string;
 }
 
 /**
  * Generic form state.
  */
 export interface FormState<T> {
-    values: T;
-    errors: FieldError[];
-    isSubmitting: boolean;
-    isValid: boolean;
+  values: T;
+  errors: FieldError[];
+  isSubmitting: boolean;
+  isValid: boolean;
 }
 
 // =============================================================================
@@ -83,7 +83,7 @@ export interface FormState<T> {
  * Make all properties in T optional and nullable.
  */
 export type PartialNullable<T> = {
-    [P in keyof T]?: T[P] | null;
+  [P in keyof T]?: T[P] | null;
 };
 
 /**

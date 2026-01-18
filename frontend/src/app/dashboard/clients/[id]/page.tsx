@@ -1,80 +1,149 @@
 import { serverApi } from '@/lib/api/server';
 import Link from 'next/link';
-import styles from './page.module.css';
 import { notFound } from 'next/navigation';
+import { Page } from '@/components/ui/Page';
+import { Card } from '@/components/ui/Card';
+import { Badge } from '@/components/ui/Badge';
 
 interface PageProps {
-    params: Promise<{ id: string }>;
+  params: Promise<{ id: string }>;
 }
 
 export default async function ClientDetailsPage({ params }: PageProps) {
-    const { id } = await params;
-    const clientId = parseInt(id, 10);
+  const { id } = await params;
+  const clientId = parseInt(id, 10);
 
-    if (isNaN(clientId)) {
-        notFound();
-    }
+  if (isNaN(clientId)) {
+    notFound();
+  }
 
-    let client;
-    try {
-        client = await serverApi.clients.get(clientId);
-    } catch (error) {
-        console.error(`Failed to fetch client ${clientId}`, error);
-        // Assuming 404 from API or similar, but for now we'll just show not found
-        // In a real app we might differentiate between 404 and 500
-        notFound();
-    }
+  let client;
+  try {
+    client = await serverApi.clients.get(clientId);
+  } catch (error) {
+    console.error(`Failed to fetch client ${clientId}`, error);
+    notFound();
+  }
 
-    return (
-        <div className={styles['container']}>
-            <Link href="/dashboard/clients" className={styles['backLink']}>
-                ← Back to Clients
-            </Link>
+  return (
+    <Page.Container>
+      <Link
+        href="/dashboard/clients"
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          color: '#666',
+          textDecoration: 'none',
+          marginBottom: '1.5rem',
+          fontSize: '0.875rem',
+          transition: 'color 0.2s',
+        }}
+      >
+        ← Back to Clients
+      </Link>
 
-            <header className={styles['header']}>
-                <div>
-                    <h1 className={styles['title']}>{client.name}</h1>
-                    <p className={styles['subtitle']}>Client Workspace</p>
-                </div>
-                <div className={`${styles['status']} ${client.active ? styles['statusActive'] : styles['statusInactive']}`}>
-                    {client.active ? 'Active' : 'Inactive'}
-                </div>
-            </header>
-
-            <div className={styles['grid']}>
-                {/* Configuration Card */}
-                <div className={styles['card']}>
-                    <h2 className={styles['sectionTitle']}>Meta Configuration</h2>
-
-                    <div className={styles['field']}>
-                        <label className={styles['label']}>Ad Account ID</label>
-                        <div className={`${styles['value']} ${styles['mono']}`}>
-                            {client.meta_ad_account_id || 'Not configured'}
-                        </div>
-                    </div>
-
-
-
-                    <div className={styles['field']}>
-                        <label className={styles['label']}>Slug</label>
-                        <div className={`${styles['value']} ${styles['mono']}`}>
-                            {client.slug || '-'}
-                        </div>
-                    </div>
-                </div>
-
-                {/* Metrics Placeholder */}
-                <div className={styles['card']}>
-                    <h2 className={styles['sectionTitle']}>Performance Metrics</h2>
-                    <p style={{ color: '#a1a1aa' }}>
-                        Metrics dashboard coming soon...
-                    </p>
-                    {/* 
-                      TODO: Implement Metrics Chart Component here.
-                      We will fetch metrics using serverApi.metrics.getSummary(clientId)
-                    */}
-                </div>
-            </div>
+      <Page.Header>
+        <div>
+          <Page.Title>{client.name}</Page.Title>
+          <p style={{ color: '#666', margin: '0.5rem 0 0' }}>
+            Client Workspace
+          </p>
         </div>
-    );
+        <div>
+          {client.active ? (
+            <Badge variant="success">Active</Badge>
+          ) : (
+            <Badge variant="default">Inactive</Badge>
+          )}
+        </div>
+      </Page.Header>
+
+      <Page.Grid>
+        {/* Configuration Card */}
+        <Card>
+          <h2
+            style={{
+              fontSize: '1.25rem',
+              fontWeight: 600,
+              marginBottom: '1rem',
+              borderBottom: '1px solid rgba(0,0,0,0.1)',
+              paddingBottom: '0.5rem',
+            }}
+          >
+            Meta Configuration
+          </h2>
+
+          <div style={{ marginBottom: '1rem' }}>
+            <label
+              style={{
+                display: 'block',
+                fontSize: '0.875rem',
+                color: '#666',
+                marginBottom: '0.25rem',
+                fontWeight: 500,
+              }}
+            >
+              Ad Account ID
+            </label>
+            <div
+              style={{
+                fontFamily: 'ui-monospace, monospace',
+                background: 'rgba(0,0,0,0.05)',
+                padding: '0.25rem 0.5rem',
+                borderRadius: '4px',
+                display: 'inline-block',
+                fontSize: '0.9rem',
+              }}
+            >
+              {client.meta_ad_account_id || 'Not configured'}
+            </div>
+          </div>
+
+          <div style={{ marginBottom: '1rem' }}>
+            <label
+              style={{
+                display: 'block',
+                fontSize: '0.875rem',
+                color: '#666',
+                marginBottom: '0.25rem',
+                fontWeight: 500,
+              }}
+            >
+              Slug
+            </label>
+            <div
+              style={{
+                fontFamily: 'ui-monospace, monospace',
+                background: 'rgba(0,0,0,0.05)',
+                padding: '0.25rem 0.5rem',
+                borderRadius: '4px',
+                display: 'inline-block',
+                fontSize: '0.9rem',
+              }}
+            >
+              {client.slug || '-'}
+            </div>
+          </div>
+        </Card>
+
+        {/* Metrics Placeholder */}
+        <Card>
+          <h2
+            style={{
+              fontSize: '1.25rem',
+              fontWeight: 600,
+              marginBottom: '1rem',
+              borderBottom: '1px solid rgba(0,0,0,0.1)',
+              paddingBottom: '0.5rem',
+            }}
+          >
+            Performance Metrics
+          </h2>
+          <p style={{ color: '#666', fontStyle: 'italic' }}>
+            Metrics dashboard coming soon...
+          </p>
+        </Card>
+      </Page.Grid>
+    </Page.Container>
+  );
 }

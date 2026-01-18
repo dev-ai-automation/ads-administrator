@@ -1,6 +1,6 @@
 /**
  * API Client - Centralized HTTP client with type safety and validation.
- * 
+ *
  * Features:
  * - Automatic JWT token injection
  * - Zod runtime validation of responses
@@ -14,30 +14,33 @@ import type { ApiError } from '@/types';
 // CONFIGURATION
 // =============================================================================
 
-const API_BASE_URL = process.env['NEXT_PUBLIC_API_URL'] ?? 'http://localhost:8000';
+const API_BASE_URL =
+  process.env['NEXT_PUBLIC_API_URL'] ?? 'http://localhost:8000';
 
 /**
  * Custom error class for API errors.
  */
 export class ApiClientError extends Error {
-    public readonly status: number;
-    public readonly detail?: string;
+  public readonly status: number;
+  public readonly detail?: string | undefined;
 
-    constructor(message: string, status: number, detail?: string) {
-        super(message);
-        this.name = 'ApiClientError';
-        this.status = status;
-        this.detail = detail;
+  constructor(message: string, status: number, detail?: string) {
+    super(message);
+    this.name = 'ApiClientError';
+    this.status = status;
+    if (detail !== undefined) {
+      this.detail = detail;
     }
+  }
 
-    toApiError(): ApiError {
-        return {
-            success: false,
-            message: this.message,
-            detail: this.detail,
-            status: this.status,
-        };
-    }
+  toApiError(): ApiError {
+    return {
+      success: false,
+      message: this.message,
+      ...(this.detail !== undefined && { detail: this.detail }),
+      status: this.status,
+    };
+  }
 }
 
 // =============================================================================
@@ -55,14 +58,14 @@ let getAccessToken: TokenGetter = async () => null;
 /**
  * Configure the token getter for authenticated requests.
  * Call this during app initialization with your auth provider's token getter.
- * 
+ *
  * @example
  * // In your auth provider:
  * import { setTokenGetter } from '@/lib/api/client';
  * setTokenGetter(() => getAccessTokenSilently());
  */
 export function setTokenGetter(getter: TokenGetter): void {
-    getAccessToken = getter;
+  getAccessToken = getter;
 }
 
 // =============================================================================
@@ -70,101 +73,107 @@ export function setTokenGetter(getter: TokenGetter): void {
 // =============================================================================
 
 interface RequestOptions {
-    /** Skip authentication header */
-    skipAuth?: boolean;
-    /** Custom headers */
-    headers?: Record<string, string>;
-    /** Query parameters */
-    params?: Record<string, string | number | boolean | undefined>;
+  /** Skip authentication header */
+  skipAuth?: boolean;
+  /** Custom headers */
+  headers?: Record<string, string>;
+  /** Query parameters */
+  params?: Record<string, string | number | boolean | undefined>;
 }
 
 /**
  * Build URL with query parameters.
  */
 function buildUrl(path: string, params?: RequestOptions['params']): string {
-    const url = new URL(`${API_BASE_URL}${path}`);
+  const url = new URL(`${API_BASE_URL}${path}`);
 
-    if (params) {
-        Object.entries(params).forEach(([key, value]) => {
-            if (value !== undefined) {
-                url.searchParams.append(key, String(value));
-            }
-        });
-    }
+  if (params) {
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined) {
+        url.searchParams.append(key, String(value));
+      }
+    });
+  }
 
-    return url.toString();
+  return url.toString();
 }
 
 /**
  * Core fetch wrapper with authentication and error handling.
  */
 async function fetchApi<T>(
-    method: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE',
-    path: string,
-    options: RequestOptions & { body?: unknown; schema?: ZodSchema<T> } = {}
+  method: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE',
+  path: string,
+  options: RequestOptions & { body?: unknown; schema?: ZodSchema<T> } = {}
 ): Promise<T> {
-    const { skipAuth = false, headers = {}, params, body, schema } = options;
+  const { skipAuth = false, headers = {}, params, body, schema } = options;
 
-    // Build headers
-    const requestHeaders: Record<string, string> = {
-        'Content-Type': 'application/json',
-        ...headers,
-    };
+  // Build headers
+  const requestHeaders: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...headers,
+  };
 
-    // Add auth token if not skipped
-    if (!skipAuth) {
-        const token = await getAccessToken();
-        if (token) {
-            requestHeaders['Authorization'] = `Bearer ${token}`;
-        }
+  // Add auth token if not skipped
+  if (!skipAuth) {
+    const token = await getAccessToken();
+    if (token) {
+      requestHeaders['Authorization'] = `Bearer ${token}`;
+    }
+  }
+
+  // Make request
+  const init: RequestInit = {
+    method,
+    headers: requestHeaders,
+  };
+
+  if (body) {
+    init.body = JSON.stringify(body);
+  }
+
+  const response = await fetch(buildUrl(path, params), init);
+
+  // Handle non-2xx responses
+  if (!response.ok) {
+    let errorMessage = `API Error: ${response.statusText}`;
+    let errorDetail: string | undefined;
+
+    try {
+      const errorBody = await response.json();
+      errorMessage = errorBody.detail || errorBody.message || errorMessage;
+      errorDetail =
+        typeof errorBody.detail === 'string' ? errorBody.detail : undefined;
+    } catch {
+      // Response body is not JSON, use default message
     }
 
-    // Make request
-    const response = await fetch(buildUrl(path, params), {
-        method,
-        headers: requestHeaders,
-        body: body ? JSON.stringify(body) : undefined,
-    });
+    throw new ApiClientError(errorMessage, response.status, errorDetail);
+  }
 
-    // Handle non-2xx responses
-    if (!response.ok) {
-        let errorMessage = `API Error: ${response.statusText}`;
-        let errorDetail: string | undefined;
+  // Handle 204 No Content
+  if (response.status === 204) {
+    return undefined as T;
+  }
 
-        try {
-            const errorBody = await response.json();
-            errorMessage = errorBody.detail || errorBody.message || errorMessage;
-            errorDetail = typeof errorBody.detail === 'string' ? errorBody.detail : undefined;
-        } catch {
-            // Response body is not JSON, use default message
-        }
+  // Parse response
+  const data = await response.json();
 
-        throw new ApiClientError(errorMessage, response.status, errorDetail);
+  // Validate with Zod schema if provided
+  if (schema) {
+    const result = schema.safeParse(data);
+    if (!result.success) {
+      console.error('API Response validation failed:', result.error.format());
+      throw new ApiClientError(
+        'Invalid API response format',
+        500,
+        `Validation errors: ${result.error.issues.map((issue) => issue.message).join(', ')}`
+      );
     }
+    return result.data;
+  }
 
-    // Handle 204 No Content
-    if (response.status === 204) {
-        return undefined as T;
-    }
-
-    // Parse response
-    const data = await response.json();
-
-    // Validate with Zod schema if provided
-    if (schema) {
-        const result = schema.safeParse(data);
-        if (!result.success) {
-            console.error('API Response validation failed:', result.error.format());
-            throw new ApiClientError(
-                'Invalid API response format',
-                500,
-                `Validation errors: ${result.error.issues.map((issue) => issue.message).join(', ')}`
-            );
-        }
-        return result.data;
-    }
-
-    return data as T;
+  return data as T;
 }
 
 // =============================================================================
@@ -173,7 +182,7 @@ async function fetchApi<T>(
 
 /**
  * HTTP GET request with optional Zod validation.
- * 
+ *
  * @example
  * const clients = await api.get('/api/v1/clients', {
  *   schema: ClientListResponseSchema,
@@ -181,15 +190,15 @@ async function fetchApi<T>(
  * });
  */
 export async function get<T>(
-    path: string,
-    options?: RequestOptions & { schema?: ZodSchema<T> }
+  path: string,
+  options?: RequestOptions & { schema?: ZodSchema<T> }
 ): Promise<T> {
-    return fetchApi<T>('GET', path, options);
+  return fetchApi<T>('GET', path, options);
 }
 
 /**
  * HTTP POST request with optional Zod validation.
- * 
+ *
  * @example
  * const newClient = await api.post('/api/v1/clients', {
  *   body: { name: 'New Client', slug: 'new-client' },
@@ -197,40 +206,40 @@ export async function get<T>(
  * });
  */
 export async function post<T>(
-    path: string,
-    options?: RequestOptions & { body?: unknown; schema?: ZodSchema<T> }
+  path: string,
+  options?: RequestOptions & { body?: unknown; schema?: ZodSchema<T> }
 ): Promise<T> {
-    return fetchApi<T>('POST', path, options);
+  return fetchApi<T>('POST', path, options);
 }
 
 /**
  * HTTP PATCH request with optional Zod validation.
  */
 export async function patch<T>(
-    path: string,
-    options?: RequestOptions & { body?: unknown; schema?: ZodSchema<T> }
+  path: string,
+  options?: RequestOptions & { body?: unknown; schema?: ZodSchema<T> }
 ): Promise<T> {
-    return fetchApi<T>('PATCH', path, options);
+  return fetchApi<T>('PATCH', path, options);
 }
 
 /**
  * HTTP PUT request with optional Zod validation.
  */
 export async function put<T>(
-    path: string,
-    options?: RequestOptions & { body?: unknown; schema?: ZodSchema<T> }
+  path: string,
+  options?: RequestOptions & { body?: unknown; schema?: ZodSchema<T> }
 ): Promise<T> {
-    return fetchApi<T>('PUT', path, options);
+  return fetchApi<T>('PUT', path, options);
 }
 
 /**
  * HTTP DELETE request.
  */
 export async function del(
-    path: string,
-    options?: RequestOptions
+  path: string,
+  options?: RequestOptions
 ): Promise<void> {
-    return fetchApi<void>('DELETE', path, options);
+  return fetchApi<void>('DELETE', path, options);
 }
 
 // =============================================================================
@@ -238,12 +247,12 @@ export async function del(
 // =============================================================================
 
 export const api = {
-    get,
-    post,
-    patch,
-    put,
-    delete: del,
-    setTokenGetter,
+  get,
+  post,
+  patch,
+  put,
+  delete: del,
+  setTokenGetter,
 };
 
 export default api;

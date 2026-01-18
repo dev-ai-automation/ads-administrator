@@ -7,6 +7,7 @@
 ## 📋 Overview
 
 The frontend provides a modern, responsive dashboard for:
+
 - Secure user authentication via Auth0
 - Client and campaign management interfaces
 - Real-time metrics visualization
@@ -17,6 +18,7 @@ The frontend provides a modern, responsive dashboard for:
 ## 🏗️ Architecture
 
 ### Project Structure
+
 ```
 frontend/
 ├── src/
@@ -64,17 +66,21 @@ frontend/
 ## 🚀 Quick Start
 
 ### 1. Install Dependencies
+
 ```bash
 npm install
 ```
 
 ### 2. Configure Environment
+
 Create `.env.local` file:
+
 ```bash
 cp .env.example .env.local
 ```
 
 Required variables:
+
 ```env
 # Auth0 Configuration
 AUTH0_SECRET=<generate-with-openssl-rand-hex-32>
@@ -88,6 +94,7 @@ NEXT_PUBLIC_API_URL=http://localhost:8000
 ```
 
 ### 3. Run Development Server
+
 ```bash
 npm run dev
 ```
@@ -95,6 +102,7 @@ npm run dev
 Access at `http://localhost:3000`
 
 ### 4. Build for Production
+
 ```bash
 npm run build
 npm start
@@ -105,6 +113,7 @@ npm start
 ## 🔐 Authentication
 
 ### Auth0 Integration
+
 The app uses `@auth0/nextjs-auth0` for authentication:
 
 - **Login**: `/api/auth/login`
@@ -113,6 +122,7 @@ The app uses `@auth0/nextjs-auth0` for authentication:
 - **User Profile**: `/api/auth/me`
 
 ### Protected Routes
+
 Routes in `app/(authenticated)/` are protected by middleware:
 
 ```typescript
@@ -121,6 +131,7 @@ export default withMiddlewareAuthRequired();
 ```
 
 ### Usage in Components
+
 ```typescript
 import { getSession } from '@auth0/nextjs-auth0';
 
@@ -129,7 +140,7 @@ const session = await getSession();
 const user = session?.user;
 
 // Client Component
-'use client';
+('use client');
 import { useUser } from '@auth0/nextjs-auth0/client';
 
 const { user, error, isLoading } = useUser();
@@ -140,6 +151,7 @@ const { user, error, isLoading } = useUser();
 ## 📡 API Communication
 
 ### API Client
+
 Centralized HTTP client with Auth0 token injection:
 
 ```typescript
@@ -148,24 +160,28 @@ import { getAccessToken } from '@auth0/nextjs-auth0';
 
 export async function apiClient<T>(endpoint: string): Promise<T> {
   const { accessToken } = await getAccessToken();
-  
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${endpoint}`, {
-    headers: {
-      'Authorization': `Bearer ${accessToken}`,
-    },
-  });
-  
+
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}${endpoint}`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+
   return response.json();
 }
 ```
 
 ### Type-Safe Endpoints
+
 ```typescript
 // lib/api/clients.ts
 export const clientsApi = {
   list: () => apiClient<Client[]>('/api/v1/clients'),
   get: (id: string) => apiClient<Client>(`/api/v1/clients/${id}`),
-  create: (data: CreateClientDto) => 
+  create: (data: CreateClientDto) =>
     apiClient<Client>('/api/v1/clients', { method: 'POST', body: data }),
 };
 ```
@@ -175,6 +191,7 @@ export const clientsApi = {
 ## 🎨 Styling
 
 ### CSS Modules (Default)
+
 ```css
 /* app/dashboard/Dashboard.module.css */
 .container {
@@ -196,11 +213,13 @@ export default function Dashboard() {
 ## 🧪 Testing
 
 ### Setup (Recommended)
+
 ```bash
 npm install --save-dev @testing-library/react @testing-library/jest-dom jest
 ```
 
 ### Example Test
+
 ```typescript
 import { render, screen } from '@testing-library/react';
 import Dashboard from '@/app/(authenticated)/dashboard/page';
@@ -216,17 +235,20 @@ test('renders dashboard', () => {
 ## 📝 Development Notes
 
 ### Type Safety
+
 - All API responses validated with Zod schemas
 - Strict TypeScript configuration
 - No `any` types in production code
 
 ### Best Practices
+
 - Server Components by default (use `'use client'` only when needed)
 - API calls in Server Components or Server Actions
 - Error boundaries for graceful error handling
 - Loading states with `loading.tsx` files
 
 ### Code Style
+
 - **Formatter**: Prettier (if configured)
 - **Linter**: ESLint with Next.js config
 - **Imports**: Absolute imports via `@/` alias
@@ -236,6 +258,7 @@ test('renders dashboard', () => {
 ## 🚀 Deployment
 
 ### Build Optimization
+
 ```bash
 npm run build
 ```
@@ -243,7 +266,9 @@ npm run build
 The build output will be in `.next/` directory.
 
 ### Environment Variables (Production)
+
 Set these in your hosting platform (e.g., Render):
+
 - `AUTH0_SECRET`
 - `AUTH0_BASE_URL` (your production URL)
 - `AUTH0_ISSUER_BASE_URL`
