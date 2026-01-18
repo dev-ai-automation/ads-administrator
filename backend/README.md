@@ -1,16 +1,16 @@
 # Backend - Ads Administrator API
 
-> **FastAPI-based REST API** for managing advertising clients and Meta Ads metrics with Auth0 authentication.
+> **High-Performance FastAPI REST API** utilizing modern configuration standards (YAML/JSON Schema) and scoped Auth0 authorization.
 
 ---
 
 ## 📋 Overview
 
-The backend provides a secure, high-performance API layer that:
-- Authenticates users via Auth0 JWT tokens
-- Manages client and campaign data in PostgreSQL
-- Integrates with Meta Ads API for real-time metrics
-- Exposes OpenAPI-compliant REST endpoints
+The backend provides a secure, production-grade API layer:
+- **Scoped RBAC**: Fine-grained access control (`read:metrics`, `admin`, etc.).
+- **Modern Config**: Decoupled configuration using YAML and strict JSON Schema validation.
+- **Async Core**: 100% asynchronous I/O with SQLAlchemy 2.0 and FastAPI.
+- **Contract-First**: Pydantic v2 schemas for rock-solid request/response validation.
 
 ---
 
@@ -20,42 +20,53 @@ The backend provides a secure, high-performance API layer that:
 ```
 backend/
 ├── app/
-│   ├── api/
-│   │   └── v1/
-│   │       ├── api.py              # Main API router
-│   │       └── endpoints/          # Route handlers
-│   │           ├── clients.py      # Client management
-│   │           ├── metrics.py      # Meta Ads metrics
-│   │           └── users.py        # User endpoints
+│   ├── api/v1/                     # API routes and endpoints
 │   ├── core/
-│   │   ├── config.py               # Settings (env vars)
-│   │   ├── security.py             # Auth0 verification
-│   │   └── deps.py                 # FastAPI dependencies
-│   ├── models/
-│   │   ├── client.py               # Client ORM model
-│   │   └── user.py                 # User ORM model
-│   └── services/
-│       └── meta_ads.py             # Meta Ads service
-├── tests/                          # Pytest test suite
-│   ├── api/                        # API endpoint tests
-│   └── conftest.py                 # Test fixtures
+│   │   ├── config.py               # Singleton Settings (from YAML)
+│   │   ├── config_loader.py        # YAML loader with Env expansion
+│   │   ├── security.py             # Auth0 JWT verification
+│   │   └── deps.py                 # Scoped Dependency Injection
+│   ├── models/                     # SQLAlchemy 2.0 Async models
+│   └── services/                   # Business logic and external SDKs
+├── config/
+│   ├── settings.yaml               # Application configuration
+│   └── schema.json                 # Configuration validation schema
+├── tests/                          # Comprehensive Pytest suite
+│   ├── api/                        # Endpoint tests
+│   └── test_config.py              # Configuration validation tests
+├── alembic/                        # Database migration scripts
 ├── Dockerfile
-├── requirements.txt
-└── pyproject.toml                  # Project metadata & tools
+└── requirements.txt
 ```
 
 ---
 
 ## 🛠️ Tech Stack
 
-- **Framework**: FastAPI 0.115+
-- **Server**: Uvicorn (ASGI)
-- **ORM**: SQLAlchemy 2.0 (async)
-- **Database Driver**: asyncpg
-- **Authentication**: python-jose (JWT)
-- **Validation**: Pydantic 2.0
-- **Testing**: pytest, pytest-asyncio
-- **Ads Integration**: facebook_business SDK
+- **Framework**: FastAPI 0.128.0+
+- **Database**: PostgreSQL (SQLAlchemy 2.0 / asyncpg)
+- **Config**: PyYAML + jsonschema
+- **Validation**: Pydantic 2.12
+- **Testing**: pytest + pytest-asyncio
+- **Security**: python-jose (Auth0 Integration)
+
+---
+
+## 🔧 Configuration System (YAML)
+
+We've moved away from standard `.env` flat files to a structured YAML system in `backend/config/`.
+
+### 1. Structure
+Settings are defined in `settings.yaml` and validated against `schema.json` during application startup.
+
+### 2. Environment Variables
+The YAML loader supports `${VAR:-default}` syntax, allowing seamless environment variable expansion:
+```yaml
+app:
+  debug: ${DEBUG:-false}
+auth0:
+  domain: ${AUTH0_DOMAIN}
+```
 
 ---
 
@@ -63,179 +74,66 @@ backend/
 
 ### 1. Install Dependencies
 ```bash
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt
+pip install -r requirements-dev.txt
 ```
 
 ### 2. Configure Environment
-Create `.env` file:
+Set required env vars (refer to `backend/.env.example`):
 ```bash
-cp .env.example .env
-```
-
-Required variables:
-```env
-# Database
-DATABASE_URL=postgresql+asyncpg://user:pass@localhost:5432/ads_admin
-
-# Auth0
-AUTH0_DOMAIN=your-tenant.us.auth0.com
-AUTH0_API_AUDIENCE=https://api.ads-admin.com
-
-# Optional
-SECRET_KEY=your-secret-key
-ALGORITHM=HS256
+export AUTH0_DOMAIN=...
+export AUTH0_API_AUDIENCE=...
+export DATABASE_URL=...
 ```
 
 ### 3. Run Server
 ```bash
-# Development
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-
-# Production
-uvicorn app.main:app --host 0.0.0.0 --port 10000 --workers 4
+# Production-like with Uvicorn
+python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
-
-### 4. Access API Documentation
-- **Swagger UI**: `http://localhost:8000/docs`
-- **ReDoc**: `http://localhost:8000/redoc`
-- **OpenAPI JSON**: `http://localhost:8000/api/v1/openapi.json`
 
 ---
 
 ## 🧪 Testing
 
-### Run All Tests
+### Config Validation Tests
+Ensures the configuration loader and schema are working correctly:
 ```bash
-# Local
-pytest
-
-# Coverage report
-pytest --cov=app --cov-report=html
-
-# Docker
-docker-compose -f ../docker-compose.test.yml up --build backend-test
+python -m pytest tests/test_config.py
 ```
 
-### Test Structure
-- `tests/api/` - API endpoint tests
-- `tests/models/` - Database model tests
-- `tests/services/` - Business logic tests
-
----
-
-## 🔐 Authentication
-
-All protected endpoints require a valid Auth0 JWT token:
-
+### API Integration Tests
 ```bash
-curl -H "Authorization: Bearer <TOKEN>" \
-     http://localhost:8000/api/v1/clients
+python -m pytest tests/api/
 ```
 
-### Token Validation
-- Verifies signature using Auth0 public key
-- Checks audience matches `AUTH0_API_AUDIENCE`
-- Validates expiration and claims
-
 ---
 
-## 📡 Key Endpoints
+## 🔐 Scoped Authorization
 
-| Method | Endpoint | Description | Auth |
-|:-------|:---------|:------------|:-----|
-| `GET` | `/` | API info | ❌ |
-| `GET` | `/health` | Health check | ❌ |
-| `GET` | `/api/v1/clients` | List clients | ✅ |
-| `POST` | `/api/v1/clients` | Create client | ✅ |
-| `GET` | `/api/v1/metrics/campaigns` | Campaign metrics | ✅ |
-| `GET` | `/api/v1/users/me` | Current user | ✅ |
+Endpoints use `Annotated` dependencies to enforce Auth0 scopes:
 
----
+- `CurrentUser`: Any authenticated user.
+- `MetricsReader`: Requires `read:metrics`.
+- `AdminUser`: Requires `admin`.
 
-## 🗄️ Database Models
-
-### Client
+**Example:**
 ```python
-class Client(Base):
-    __tablename__ = "clients"
-    
-    id: UUID (PK)
-    name: str
-    email: str
-    meta_ad_account_id: str
-    created_at: datetime
-    updated_at: datetime
-```
-
-### User
-```python
-class User(Base):
-    __tablename__ = "users"
-    
-    id: UUID (PK)
-    auth0_id: str (unique)
-    email: str
-    created_at: datetime
+@router.get("")
+async def list_metrics(user: MetricsReader):
+    # This code only runs if JWT has 'read:metrics' scope
+    ...
 ```
 
 ---
 
-## 🔧 Configuration
+## 📝 Development Standards
 
-Settings are managed via Pydantic Settings in `app/core/config.py`:
-
-```python
-class Settings(BaseSettings):
-    PROJECT_NAME: str = "Ads Administrator API"
-    API_V1_STR: str = "/api/v1"
-    DATABASE_URL: str
-    AUTH0_DOMAIN: str
-    AUTH0_API_AUDIENCE: str
-    
-    class Config:
-        env_file = ".env"
-```
+- **Strict Validation**: All configuration must match `schema.json`.
+- **Async Everywhere**: Use `await` for all DB and network calls.
+- **Type Hints**: Mandatory for all function signatures.
+- **FastAPI Tags**: Group endpoints correctly for Swagger UI.
 
 ---
 
-## 📝 Development Notes
-
-### Code Style
-- **Formatter**: Black (line length 88)
-- **Linter**: Ruff
-- **Type Checker**: mypy
-- **Imports**: isort
-
-### Best Practices
-- Use async/await for all I/O operations
-- Dependency injection via FastAPI `Depends()`
-- Pydantic schemas for request/response validation
-- Comprehensive error handling with HTTP exceptions
-
----
-
-## 🐳 Docker
-
-Build and run via Docker:
-```bash
-# Build image
-docker build -t ads-backend .
-
-# Run container
-docker run -p 8000:8000 --env-file .env ads-backend
-```
-
----
-
-## 📚 Additional Resources
-
-- [FastAPI Documentation](https://fastapi.tiangolo.com/)
-- [SQLAlchemy 2.0 Guide](https://docs.sqlalchemy.org/en/20/)
-- [Auth0 FastAPI Integration](https://auth0.com/docs/quickstart/backend/python)
-- [Meta Ads API Reference](https://developers.facebook.com/docs/marketing-apis)
-
----
-
-**For deployment instructions, see [../docs/TECHNICAL_DEEP_DIVE.md](../docs/TECHNICAL_DEEP_DIVE.md)**
+**Detailed deployment guide: [../docs/TECHNICAL_DEEP_DIVE.md](../docs/TECHNICAL_DEEP_DIVE.md)**

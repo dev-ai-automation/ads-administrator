@@ -1,21 +1,32 @@
 # Frontend - Ads Administrator Dashboard
 
-> **Next.js 16 App Router** application with Auth0 authentication and type-safe API integration.
+> **Ultra-Minimalist Dashboard** built with Next.js 16 App Router, Zinc-themed design system, and type-safe API integration.
 
 ---
 
 ## 📋 Overview
 
-The frontend provides a modern, responsive dashboard for:
+The frontend provides a high-performance, responsive platform for advertising management:
 
-- Secure user authentication via Auth0
-- Client and campaign management interfaces
-- Real-time metrics visualization
-- Type-safe API communication
+- **Surgical Precision UI**: Custom-built minimalist UI kit using Zinc palette.
+- **Secure Auth**: Full Auth0 integration with scoped permissions.
+- **Data Integrity**: Runtime validation of all API responses using Zod.
+- **Performance**: Standardized Sass-based styling and optimized Server Components.
 
 ---
 
 ## 🏗️ Architecture
+
+### Custom UI Kit (`src/components/ui/`)
+
+We avoid heavy external libraries in favor of high-quality, proprietary components:
+
+- **`Card`**: Responsive container with subtle borders and hover states.
+- **`Button`**: Consistent action elements with primary, secondary, and danger variants.
+- **`Table`**: Standardized data visualization for metrics and lists.
+- **`Input` / `Form`**: Type-safe form controls with integrated validation feedback.
+- **`Badge`**: Small status indicators for active/inactive/pending states.
+- **`Page`**: Layout primitives (`Container`, `Header`, `Title`, `Grid`) for page consistency.
 
 ### Project Structure
 
@@ -23,43 +34,33 @@ The frontend provides a modern, responsive dashboard for:
 frontend/
 ├── src/
 │   ├── app/                        # App Router (Next.js 16)
-│   │   ├── (authenticated)/       # Protected routes
-│   │   │   ├── dashboard/         # Dashboard page
-│   │   │   └── clients/           # Client management
-│   │   ├── api/auth/[auth0]/      # Auth0 route handler
-│   │   ├── layout.tsx             # Root layout
-│   │   └── page.tsx               # Landing page
-│   ├── lib/                       # Utilities
-│   │   ├── api/                   # API client
-│   │   │   ├── client.ts          # HTTP client setup
-│   │   │   ├── clients.ts         # Clients endpoints
-│   │   │   └── metrics.ts         # Metrics endpoints
-│   │   ├── auth/                  # Auth utilities
-│   │   └── utils/                 # Helper functions
-│   ├── types/                     # TypeScript definitions
-│   │   ├── api.ts                 # API response types
-│   │   ├── client.ts              # Client types
-│   │   └── user.ts                # User types
-│   ├── hooks/                     # Custom React hooks
-│   └── middleware.ts              # Next.js middleware (auth)
-├── public/                        # Static assets
-├── .env.example
-├── next.config.ts
-├── tsconfig.json
-└── package.json
+│   │   ├── dashboard/              # Protected dashboard routes
+│   │   ├── api/auth/               # Auth0 route handlers
+│   │   └── layout.tsx              # Zinc-themed root layout
+│   ├── components/ui/             # High-End UI Component Library
+│   ├── lib/                        # Core Utilities
+│   │   ├── api/                    # Type-safe API Services
+│   │   │   ├── client.ts           # Core fetch wrapper (Client-side)
+│   │   │   ├── server.ts           # Secure API wrapper (Server-side)
+│   │   │   └── clients.ts          # Domain-specific services
+│   │   └── schemas/                # Zod schemas for contract validation
+│   ├── styles/                     # Centralized Design System
+│   │   ├── variables.scss          # Zinc palette, spacing, and breakpoints
+│   │   └── globals.scss            # Global resets and modern typography
+│   ├── types/                      # Comprehensive TypeScript definitions
+│   └── hooks/                      # Custom hooks (e.g., useAsync)
 ```
 
 ---
 
 ## 🛠️ Tech Stack
 
-- **Framework**: Next.js 16.1.3 (App Router)
+- **Framework**: Next.js 16.1.3 (App Router / Turbopack)
 - **React**: 19.2.3
-- **Language**: TypeScript 5
-- **Auth**: @auth0/nextjs-auth0
+- **Styling**: Sass (SCSS) + CSS Modules
+- **Design Language**: Minimalist Zinc (Zinc-50 to Zinc-950)
 - **Validation**: Zod 4.3.5
-- **Styling**: CSS Modules (or Tailwind if configured)
-- **Linting**: ESLint + eslint-config-next
+- **Linting**: ESLint + Prettier
 
 ---
 
@@ -73,219 +74,59 @@ npm install
 
 ### 2. Configure Environment
 
-Create `.env.local` file:
-
-```bash
-cp .env.example .env.local
-```
-
-Required variables:
+Create `.env.local`:
 
 ```env
 # Auth0 Configuration
 AUTH0_SECRET=<generate-with-openssl-rand-hex-32>
-AUTH0_BASE_URL=http://localhost:3000
-AUTH0_ISSUER_BASE_URL=https://your-tenant.us.auth0.com
+AUTH0_BASE_URL=http://localhost:10000
+AUTH0_DOMAIN=your-tenant.us.auth0.com
 AUTH0_CLIENT_ID=your-client-id
 AUTH0_CLIENT_SECRET=your-client-secret
+AUTH0_AUDIENCE=https://api.ads-admin.com
 
 # API Configuration
 NEXT_PUBLIC_API_URL=http://localhost:8000
 ```
 
-### 3. Run Development Server
+### 3. Development & Build
 
 ```bash
-npm run dev
-```
-
-Access at `http://localhost:3000`
-
-### 4. Build for Production
-
-```bash
-npm run build
-npm start
+npm run dev      # Local development
+npm run build    # Production build
+npm test         # Run unit tests (Jest)
 ```
 
 ---
 
-## 🔐 Authentication
+## 📡 API Layer
 
-### Auth0 Integration
+We use a two-tier API approach:
 
-The app uses `@auth0/nextjs-auth0` for authentication:
+1.  **`serverApi`**: Used in Server Components. Automatically injects Auth0 session tokens server-side.
+2.  **`clientService`**: Used in Client Components. Requires manual token getter setup.
 
-- **Login**: `/api/auth/login`
-- **Logout**: `/api/auth/logout`
-- **Callback**: `/api/auth/callback`
-- **User Profile**: `/api/auth/me`
-
-### Protected Routes
-
-Routes in `app/(authenticated)/` are protected by middleware:
-
-```typescript
-// middleware.ts
-export default withMiddlewareAuthRequired();
-```
-
-### Usage in Components
-
-```typescript
-import { getSession } from '@auth0/nextjs-auth0';
-
-// Server Component
-const session = await getSession();
-const user = session?.user;
-
-// Client Component
-('use client');
-import { useUser } from '@auth0/nextjs-auth0/client';
-
-const { user, error, isLoading } = useUser();
-```
-
----
-
-## 📡 API Communication
-
-### API Client
-
-Centralized HTTP client with Auth0 token injection:
-
-```typescript
-// lib/api/client.ts
-import { getAccessToken } from '@auth0/nextjs-auth0';
-
-export async function apiClient<T>(endpoint: string): Promise<T> {
-  const { accessToken } = await getAccessToken();
-
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}${endpoint}`,
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    }
-  );
-
-  return response.json();
-}
-```
-
-### Type-Safe Endpoints
-
-```typescript
-// lib/api/clients.ts
-export const clientsApi = {
-  list: () => apiClient<Client[]>('/api/v1/clients'),
-  get: (id: string) => apiClient<Client>(`/api/v1/clients/${id}`),
-  create: (data: CreateClientDto) =>
-    apiClient<Client>('/api/v1/clients', { method: 'POST', body: data }),
-};
-```
-
----
-
-## 🎨 Styling
-
-### CSS Modules (Default)
-
-```css
-/* app/dashboard/Dashboard.module.css */
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-```
-
+**Parallel Fetching Example:**
 ```tsx
-import styles from './Dashboard.module.css';
-
-export default function Dashboard() {
-  return <div className={styles.container}>...</div>;
-}
+const [client, metrics] = await Promise.all([
+  serverApi.clients.get(id),
+  serverApi.metrics.getSummary(id)
+]);
 ```
 
 ---
 
-## 🧪 Testing
-
-### Setup (Recommended)
-
-```bash
-npm install --save-dev @testing-library/react @testing-library/jest-dom jest
-```
-
-### Example Test
-
-```typescript
-import { render, screen } from '@testing-library/react';
-import Dashboard from '@/app/(authenticated)/dashboard/page';
-
-test('renders dashboard', () => {
-  render(<Dashboard />);
-  expect(screen.getByText('Dashboard')).toBeInTheDocument();
-});
-```
-
----
-
-## 📝 Development Notes
-
-### Type Safety
-
-- All API responses validated with Zod schemas
-- Strict TypeScript configuration
-- No `any` types in production code
-
-### Best Practices
-
-- Server Components by default (use `'use client'` only when needed)
-- API calls in Server Components or Server Actions
-- Error boundaries for graceful error handling
-- Loading states with `loading.tsx` files
+## 📝 Standards
 
 ### Code Style
+- **Formatting**: Prettier is mandatory. Run `npm run format`.
+- **Linting**: No warnings allowed in CI. Run `npm run lint`.
+- **TypeScript**: `strict` mode enabled with `exactOptionalPropertyTypes`.
 
-- **Formatter**: Prettier (if configured)
-- **Linter**: ESLint with Next.js config
-- **Imports**: Absolute imports via `@/` alias
-
----
-
-## 🚀 Deployment
-
-### Build Optimization
-
-```bash
-npm run build
-```
-
-The build output will be in `.next/` directory.
-
-### Environment Variables (Production)
-
-Set these in your hosting platform (e.g., Render):
-
-- `AUTH0_SECRET`
-- `AUTH0_BASE_URL` (your production URL)
-- `AUTH0_ISSUER_BASE_URL`
-- `AUTH0_CLIENT_ID`
-- `AUTH0_CLIENT_SECRET`
-- `NEXT_PUBLIC_API_URL` (backend URL)
+### Accessibility
+- All interactive components must support `aria-invalid`, `tabIndex`, and semantic HTML tags.
+- High contrast (Zinc-themed) ensures WCAG compliance.
 
 ---
 
-## 📚 Additional Resources
-
-- [Next.js 16 Documentation](https://nextjs.org/docs)
-- [App Router Guide](https://nextjs.org/docs/app)
-- [Auth0 Next.js SDK](https://github.com/auth0/nextjs-auth0)
-- [React 19 Documentation](https://react.dev/)
-- [TypeScript Handbook](https://www.typescriptlang.org/docs/)
-
----
-
-**For deployment instructions, see [../docs/TECHNICAL_DEEP_DIVE.md](../docs/TECHNICAL_DEEP_DIVE.md)**
+**Detailed architecture guide: [docs/API_LAYER.md](./docs/API_LAYER.md)**

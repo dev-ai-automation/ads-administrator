@@ -1,226 +1,86 @@
 # Ads Administrator Platform
 
-> **Enterprise-grade advertising campaign management platform** built with FastAPI and Next.js, featuring Auth0 authentication and Meta Ads integration.
+> **High-End Minimalist Advertising Management** built with FastAPI and Next.js.
+> Featuring a Zinc-themed Design System, Scoped Auth0 Security, and YAML-based Configuration.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Python 3.10+](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.12+](https://img.shields.io/badge/Python-3.12+-blue.svg)](https://www.python.org/downloads/)
 [![Next.js 16](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org/)
-
----
-
-## 📋 Table of Contents
-
-- [Overview](#overview)
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Project Structure](#project-structure)
-- [Getting Started](#getting-started)
-- [Documentation](#documentation)
-- [Deployment](#deployment)
-- [Contributing](#contributing)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 ---
 
 ## 🎯 Overview
 
-The **Ads Administrator Platform** is a full-stack application designed to streamline the management of advertising campaigns and client data. It provides secure, role-based access to Meta Ads metrics and administrative tools through a modern, responsive interface.
+The **Ads Administrator Platform** is a surgical-precision tool for agencies to manage advertising clients and track Meta Ads performance. We prioritize **zero-dependency UI**, **type safety**, and **minimalist aesthetics**.
 
-### Key Capabilities
-- 🔐 **Secure Authentication** via Auth0 SSO
-- 📊 **Real-time Metrics** from Meta Ads API
-- 👥 **Client Management** with relationship tracking
-- 🎨 **Modern UI** built with Next.js and TypeScript
-- 🚀 **Cloud-Ready** deployment on Render
-
----
-
-## ✨ Features
-
-### Backend (FastAPI)
-- RESTful API with automatic OpenAPI documentation (`/docs`)
-- JWT-based authentication with Auth0
-- PostgreSQL database with SQLAlchemy ORM
-- Meta Ads integration for campaign metrics
-- Comprehensive test suite with pytest
-
-### Frontend (Next.js)
-- Server-side rendering and static generation
-- Type-safe API client with Zod validation
-- Auth0 middleware for protected routes
-- Responsive, component-based architecture
-- Modern React 19 features
+### Key Pillars
+- 🌑 **Ultra-Minimalist UI**: Proprietary Zinc design system (Linear/Vercel vibe).
+- 🔐 **Scoped Security**: RBAC via Auth0 scopes (`read:metrics`, `admin`).
+- 🛠️ **Modern Configuration**: Validated YAML/JSON Schema architecture.
+- 📡 **Tiered API**: Robust fetching with automatic request deduplication.
 
 ---
 
-## 🛠️ Tech Stack
+## ✨ Core Features
 
-| Layer | Technology | Version |
-|:------|:-----------|:--------|
-| **Backend** | FastAPI | ≥0.115.0 |
-| **Frontend** | Next.js | 16.1.3 |
-| **Database** | PostgreSQL | - |
-| **ORM** | SQLAlchemy | ≥2.0.0 |
-| **Auth** | Auth0 | - |
-| **Runtime** | Python | 3.10+ |
-| **Runtime** | Node.js | 18.17.0 |
+- **Dynamic Dashboard**: Real-time client overview and metric visualization.
+- **Client Management**: Full CRUD with Meta Ad Account integration.
+- **Advanced Metrics**: Tabular data view with responsive Zinc UI components.
+- **Reliable Backend**: Validated configurations and strict Pydantic contract integrity.
 
 ---
 
-## 📁 Project Structure
+## 🏗️ Technical Stack
+
+| Layer | Technology | Key Features |
+|:------|:-----------|:-------------|
+| **Frontend** | Next.js 16 (React 19) | Custom UI Kit, SCSS, App Router, Zod |
+| **Backend** | FastAPI | Async SQLAlchemy 2.0, YAML Config, Scoped Auth |
+| **Database** | PostgreSQL | Managed via asyncpg and Alembic |
+| **Identity** | Auth0 | Scoped JWTs, Next.js Auth0 v4 SDK |
+| **Deployment** | Render | Automated CI/CD via IaC (render.yaml) |
+
+---
+
+## 📁 Project Architecture
 
 ```
 ads-administrator/
-├── backend/              # FastAPI application
-│   ├── app/
-│   │   ├── api/         # API routes (v1)
-│   │   ├── core/        # Config, security, dependencies
-│   │   ├── models/      # SQLAlchemy models
-│   │   └── services/    # Business logic
-│   ├── tests/           # Pytest test suite
-│   └── requirements.txt
-├── frontend/            # Next.js application
-│   ├── src/
-│   │   ├── app/        # App Router pages
-│   │   ├── lib/        # Utilities, API client
-│   │   └── types/      # TypeScript definitions
-│   └── package.json
-├── docs/                # Project documentation
-│   ├── BUSINESS_PRESENTATION.md
-│   ├── TECHNICAL_DEEP_DIVE.md
-│   └── CREDENTIALS_AND_SERVICES.md
-├── docker-compose.yml   # Local development
-├── docker-compose.test.yml  # Testing environment
-└── render.yaml          # Render deployment config
+├── backend/            # FastAPI (Async, YAML Config, Pytest)
+├── frontend/           # Next.js (Zinc UI Kit, Sass, Jest)
+├── docs/               # Technical and Business Deep Dives
+├── render.yaml         # Infrastructure as Code
+└── docker-compose.yml  # Standard Orchestration
 ```
 
 ---
 
 ## 🚀 Getting Started
 
-### Prerequisites
-- **Python 3.10+**
-- **Node.js 18.17+**
-- **PostgreSQL 14+**
-- **Docker** (optional, for containerized development)
+Refer to the **[Development Guide](./docs/DEVELOPMENT.md)** for detailed local setup, coding standards, and testing procedures.
 
-### Local Development
-
-#### 1. Clone the Repository
-```bash
-git clone https://github.com/dev-ai-automation/ads-administrator.git
-cd ads-administrator
-```
-
-#### 2. Backend Setup
-```bash
-cd backend
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-pip install -r requirements.txt
-
-# Copy and configure environment variables
-cp .env.example .env
-# Edit .env with your Auth0 and database credentials
-
-# Run migrations (if applicable)
-# alembic upgrade head
-
-# Start the server
-uvicorn app.main:app --reload
-```
-
-Backend will be available at `http://localhost:8000`  
-API docs at `http://localhost:8000/docs`
-
-#### 3. Frontend Setup
-```bash
-cd frontend
-npm install
-
-# Copy and configure environment variables
-cp .env.example .env.local
-# Edit .env.local with your Auth0 credentials
-
-# Start the dev server
-npm run dev
-```
-
-Frontend will be available at `http://localhost:10000`
-
-#### 4. Using Docker (Alternative)
-```bash
-# Start all services
-# Note: Ensure you have created 'frontend/.env.local' and 'backend/.env' first!
-docker-compose up --build
-
-# Run tests
-docker-compose -f docker-compose.test.yml up --build backend-test
-```
+### Summary
+1. **Auth0 Setup**: Configure an API with scopes: `read:metrics`, `read:clients`, `write:clients`, `admin`.
+2. **Backend**: `pip install -r requirements.txt`, then `python -m uvicorn app.main:app`.
+3. **Frontend**: `npm install`, then `npm run dev`.
 
 ---
 
-## 📚 Documentation
+## 📚 Documentation Index
 
-Comprehensive documentation is available in the [`docs/`](./docs) directory:
-
-- **[Business Presentation](./docs/BUSINESS_PRESENTATION.md)** - Value proposition and roadmap
-- **[Technical Deep Dive](./docs/TECHNICAL_DEEP_DIVE.md)** - Architecture and deployment
-- **[Credentials & Services](./docs/CREDENTIALS_AND_SERVICES.md)** - Environment setup guide
-- **[Backend README](./backend/README.md)** - Backend-specific documentation
-- **[Frontend README](./frontend/README.md)** - Frontend-specific documentation
-- **[Development Guide](./docs/DEVELOPMENT.md)** - Contributing and coding standards
-
----
-
-## 🌐 Deployment
-
-This project is configured for deployment on **Render** using Infrastructure as Code.
-
-### Automated Deployment
-1. Connect your GitHub repository to Render
-2. Render will automatically detect `render.yaml`
-3. Configure environment variables via Render dashboard
-4. Deploy!
-
-See [TECHNICAL_DEEP_DIVE.md](./docs/TECHNICAL_DEEP_DIVE.md) for detailed deployment instructions.
+- 📑 **[API Layer Architecture](./frontend/docs/API_LAYER.md)** - Data fetching standards.
+- ⚙️ **[Development Guide](./docs/DEVELOPMENT.md)** - Workflow and coding standards.
+- 🏗️ **[Technical Deep Dive](./docs/TECHNICAL_DEEP_DIVE.md)** - Systems overview.
+- 🚀 **[Deployment Manual](./docs/DEPLOYMENT_MANUAL.md)** - Render setup.
 
 ---
 
 ## 🤝 Contributing
 
-We welcome contributions! Please follow these guidelines:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feat/amazing-feature`)
-3. Follow [Conventional Commits](https://www.conventionalcommits.org/) format
-4. Write tests for new features
-5. Submit a pull request
-
-### Commit Message Format
-```
-<type>(<scope>): <description>
-
-[optional body]
-
-[optional footer]
-```
-
-**Types**: `feat`, `fix`, `docs`, `chore`, `test`, `refactor`, `perf`, `ci`
+We follow **Conventional Commits** and strict **Sass/TypeScript/Python** linting. Ensure all tests pass before pushing:
+- `npm test` (Frontend)
+- `python -m pytest` (Backend)
 
 ---
 
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-## 🔗 Links
-
-- **Live Demo**: [Coming Soon]
-- **API Documentation**: `/docs` endpoint when running
-- **GitHub**: [dev-ai-automation/ads-administrator](https://github.com/dev-ai-automation/ads-administrator)
-
----
-
-**Built with ❤️ by the Dev AI Automation Team**
+**Built with Precision by the Ads Admin Engineering Team.**
